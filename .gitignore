@@ -25,3 +25,11 @@ proguard/
 
 # Log Files
 *.log
+
+# --- My Files
+
+# Some personal files
+/android/_keystore/*
+/android/_apks/*
+_tmp/
+cache/
