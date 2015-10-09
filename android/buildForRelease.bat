@@ -2,10 +2,10 @@
 title Checking...
 
 :config
-set path_prj=com.rejh.icerrr.itson
-set name_prj=Icerrr
-set name_key=icerrr
-set name_jarsigner_thingie=icerrr
+set path_prj=com.rejh.callscreenoff
+set name_prj=CallScreenOff
+set name_key=callscreenoff
+set name_jarsigner_thingie=callscreenoff
 set android_sdk_extras=\Android-sdk-extras\
 
 :findandroidbat
@@ -79,8 +79,6 @@ echo.
 call %zipalign% -f -v 4 %cd%\bin\%name_prj%-release-unsigned.apk %cd%\..\_apks\%name_prj%.apk
 if not errorlevel 0 goto error
 if errorlevel 1 goto error
-
-copy %cd%\..\_apks\%name_prj%.apk D:\Desktop\Dropbox\__Static\icerrr\tmp_apks\%name_prj%.apk
 
 title Install?
 echo.

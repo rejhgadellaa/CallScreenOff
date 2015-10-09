@@ -1,8 +1,8 @@
 @echo off
 
 :config
-set path_prj=com.rejh.icerrr.itson
-set name_prj=Icerrr
+set path_prj=com.rejh.callscreenoff
+set name_prj=CallScreenOff
 set android_sdk_extras=\Android-sdk-extras\
 
 :findandroidbat
@@ -16,19 +16,6 @@ echo.
 echo Error: could not locate android.bat
 echo Please edit this batch file and under 'findandroidbat' add the path to your copy of [android-sdk]/tools/android.bat
 goto error
-
-:clean_stuff
-set projcd=%cd%
-echo.
-echo Updating libraries...
-echo.
-cd %android_sdk_extras%google\google_play_services\libproject\google-play-services_lib
-call %androidsdk%tools\android.bat update project -p %cd% -s -t android-21
-cd %android_sdk_extras%android\support\v7\appcompat
-call %androidsdk%tools\android.bat update project -p %cd% -s -t android-21
-cd %android_sdk_extras%android\support\v7\mediarouter
-call %androidsdk%tools\android.bat update project -p %cd% -s -t android-21
-cd %projcd%
 
 :sdkfound
 cd %path_prj%
@@ -72,9 +59,6 @@ REM pause
 echo.
 echo Installing app...
 echo.
-
-REM C:\Android\android-sdk\platform-tools\adb -d uninstall org.z25.weckerapp
-REM if not errorlevel 0 goto error
 
 %androidsdk%platform-tools\adb devices
 %androidsdk%platform-tools\adb -e install -r bin\%name_prj%-debug.apk
