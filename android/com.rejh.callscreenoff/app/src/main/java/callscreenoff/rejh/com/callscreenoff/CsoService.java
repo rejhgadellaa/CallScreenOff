@@ -19,6 +19,8 @@ public class CsoService extends Service {
     // ===================================================================
     // Objects and variables..
 
+    private Context context;
+
     private TelephonyManager telephonyMgr;
     private PhoneStateListener phoneListener;
 
@@ -50,6 +52,9 @@ public class CsoService extends Service {
 
         Log.d(APPTAG, "CsoService.onCreate()");
 
+        // Context
+        context = (Context) this;
+
         // Settings
         sett = getSharedPreferences(APPTAG,2);
         settEditor = sett.edit();
@@ -60,6 +65,10 @@ public class CsoService extends Service {
 
         // Prep receiver..
         csoScreenRecv = new CsoScreenRecv();
+
+        // Set up receiver :: TODO: not for prod!
+        IntentFilter filterScreen = new IntentFilter(Intent.ACTION_SCREEN_ON);
+        registerReceiver(csoScreenRecv, filterScreen);
 
         // Toast it!
         Toast.makeText(CsoService.this, "CallScreenOff Service Active", Toast.LENGTH_SHORT).show();
@@ -117,17 +126,12 @@ public class CsoService extends Service {
         if(am.isBluetoothA2dpOn()) {
             btConnected = true;
         }
-
-        // Store..
-
-        settEditor.putBoolean("btConnected", btConnected);
-        settEditor.putInt("lastState", state);
-        settEditor.putString("lastNumber", incomingNumber);
-        settEditor.commit();
+        btConnected = true;
 
         // (Un)register screen listener..
 
         if (btConnected && state==TelephonyManager.CALL_STATE_OFFHOOK) {
+            Log.d(APPTAG," -> BT && ofhook, reg listener");
 
             // Keyguard (lockscreen)
             KeyguardManager keyguardManager = (KeyguardManager) CsoService.this.getSystemService(Activity.KEYGUARD_SERVICE);
@@ -141,6 +145,7 @@ public class CsoService extends Service {
             registerReceiver(csoScreenRecv, filterScreen);
 
         } else if (btConnected && state==TelephonyManager.CALL_STATE_IDLE) {
+            Log.d(APPTAG," -> BT && idle, unreg listener");
 
             // Keyguard (lockscreen)
             KeyguardManager keyguardManager = (KeyguardManager) CsoService.this.getSystemService(Activity.KEYGUARD_SERVICE);
@@ -151,21 +156,29 @@ public class CsoService extends Service {
 
             // Unreg listener..
             try {
-                unregisterReceiver(csoScreenRecv);
+                //unregisterReceiver(csoScreenRecv);
             } catch(IllegalArgumentException e) {
                 Log.e(APPTAG," -> Error: "+ e);
                 Log.e(APPTAG,e.getStackTrace().toString());
             }
 
         } else {
+            Log.d(APPTAG," -> No BT || ringing, unreg listener");
             // Unreg listener..
             try {
-                unregisterReceiver(csoScreenRecv);
+                //unregisterReceiver(csoScreenRecv);
             } catch(IllegalArgumentException e) {
                 Log.e(APPTAG," -> Error: "+ e);
                 Log.e(APPTAG,e.getStackTrace().toString());
             }
         }
+
+        // Store..
+
+        settEditor.putBoolean("btConnected", btConnected);
+        settEditor.putInt("lastState", state);
+        settEditor.putString("lastNumber", incomingNumber);
+        settEditor.commit();
 
     }
 
