@@ -38,7 +38,7 @@ public class CsoAdminRecv extends DeviceAdminReceiver{
 
     @Override
     public CharSequence onDisableRequested(Context context, Intent intent) {
-        return "CsoAdminRecv onDisableRequested";
+        return "CsoAdminRecv TODO: onDisableRequested";
     }
 
     @Override

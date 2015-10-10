@@ -25,7 +25,6 @@ import android.widget.Toast;
 
 public class CsoService extends Service
         implements SensorEventListener
-
 {
 
     // ===================================================================
@@ -72,7 +71,7 @@ public class CsoService extends Service
 
         super.onCreate();
 
-        Log.d(APPTAG, "CsoService.onCreate()");
+        Log.i(APPTAG, "CsoService.onCreate()");
 
         // Context
         context = (Context) this;
@@ -118,7 +117,7 @@ public class CsoService extends Service
 
         super.onDestroy();
 
-        Log.d(APPTAG, "CsoService.onDestroy()");
+        Log.i(APPTAG, "CsoService.onDestroy()");
 
     }
 

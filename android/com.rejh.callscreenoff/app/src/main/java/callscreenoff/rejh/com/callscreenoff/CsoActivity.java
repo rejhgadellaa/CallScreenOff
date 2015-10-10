@@ -38,7 +38,7 @@ public class CsoActivity extends AppCompatActivity implements View.OnClickListen
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_cso);
 
-        Log.d(APPTAG, "CsoActivity.onCreate()");
+        Log.i(APPTAG, "CsoActivity.onCreate()");
 
         // Context
         context = (Context) this;
@@ -63,7 +63,7 @@ public class CsoActivity extends AppCompatActivity implements View.OnClickListen
 
         super.onResume();
 
-        Log.d(APPTAG, "CsoActivity.onResume()");
+        Log.i(APPTAG, "CsoActivity.onResume()");
 
         if (deviceManger.isAdminActive(compName)) {
             Log.d(APPTAG," -> Start service");
@@ -81,7 +81,7 @@ public class CsoActivity extends AppCompatActivity implements View.OnClickListen
         if (v==button) {
             Intent intent = new Intent(DevicePolicyManager.ACTION_ADD_DEVICE_ADMIN);
             intent.putExtra(DevicePolicyManager.EXTRA_DEVICE_ADMIN, compName);
-            intent.putExtra(DevicePolicyManager.EXTRA_ADD_EXPLANATION, "Additional text explaining why this needs to be added.");
+            intent.putExtra(DevicePolicyManager.EXTRA_ADD_EXPLANATION, "CallScreenOff needs to be a Device Administrator so it can lock your phone.");
             startActivityForResult(intent, RESULT_ENABLE);
         }
 
