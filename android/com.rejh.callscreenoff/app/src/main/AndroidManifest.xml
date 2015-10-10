@@ -4,15 +4,13 @@
 
     <uses-sdk
         android:minSdkVersion="16"
-        android:targetSdkVersion="21" />
+        android:targetSdkVersion="23" />
 
     <uses-permission android:name="android.permission.BROADCAST_STICKY" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     <uses-permission android:name="android.permission.DISABLE_KEYGUARD" />
+    <uses-permission android:name="android.permission.BIND_DEVICE_ADMIN" />
     <uses-permission android:name="android.permission.READ_PHONE_STATE" />
-
-    <android:uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
-    <android:uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
 
     <application
         android:allowBackup="true"
@@ -35,9 +33,23 @@
         </service>
 
         <receiver
-            android:name=".CsoScreenRecv"
+            android:name=".CsoService$CsoUnlockRecv"
             android:enabled="true"
             android:exported="true" >
+        </receiver>
+
+        <receiver
+            android:name=".CsoAdminRecv"
+            android:label="CsoAdmin"
+            android:description="@string/device_admin_description"
+            android:permission="android.permission.BIND_DEVICE_ADMIN"
+            >
+            <meta-data
+                android:name="android.app.device_admin"
+                android:resource="@xml/policies" />
+            <intent-filter>
+                <action android:name="android.app.action.DEVICE_ADMIN_ENABLED" />
+            </intent-filter>
         </receiver>
 
     </application>

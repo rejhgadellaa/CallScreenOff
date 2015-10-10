@@ -1,12 +1,21 @@
 package callscreenoff.rejh.com.callscreenoff;
 
 import android.app.Activity;
+import android.app.IntentService;
 import android.app.KeyguardManager;
 import android.app.Service;
+import android.app.admin.DevicePolicyManager;
+import android.content.BroadcastReceiver;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
+import android.hardware.Sensor;
+import android.hardware.SensorEvent;
+import android.hardware.SensorEventListener;
+import android.hardware.SensorManager;
 import android.media.AudioManager;
 import android.os.IBinder;
 import android.telephony.PhoneStateListener;
@@ -14,7 +23,10 @@ import android.telephony.TelephonyManager;
 import android.util.Log;
 import android.widget.Toast;
 
-public class CsoService extends Service {
+public class CsoService extends Service
+        implements SensorEventListener
+
+{
 
     // ===================================================================
     // Objects and variables..
@@ -24,12 +36,22 @@ public class CsoService extends Service {
     private TelephonyManager telephonyMgr;
     private PhoneStateListener phoneListener;
 
-    private CsoScreenRecv csoScreenRecv;
+    private DevicePolicyManager deviceManger;
+
+    private SensorManager sensorManager;
+    private Sensor proxSensor;
+
+    private CsoUnlockRecv csoUnlockRecv;
+    private IntentFilter csoUnlockRecvIntentFilter;
 
     private SharedPreferences sett;
     private SharedPreferences.Editor settEditor;
 
     private String APPTAG = "CallScreenOff";
+
+    private boolean btConnected;
+    private boolean inCall = false;
+    private int nrOfSensorSamples = 0;
 
 
     // ===================================================================
@@ -59,16 +81,31 @@ public class CsoService extends Service {
         sett = getSharedPreferences(APPTAG,2);
         settEditor = sett.edit();
 
+        // Make sticky
+        try {
+            PackageManager packMgr = context.getPackageManager();
+            ComponentName thisComponent = new ComponentName(context, CsoService.class);
+            packMgr.setComponentEnabledSetting(thisComponent, PackageManager.COMPONENT_ENABLED_STATE_ENABLED, PackageManager.DONT_KILL_APP);
+        }
+        catch(Exception e) { Log.e(APPTAG," -> MakeSticky Exception: "+e); }
+
         // TelephonyManager ++ Listener
         telephonyMgr = (TelephonyManager) getSystemService(TELEPHONY_SERVICE);
         setupTelephonyListener();
 
-        // Prep receiver..
-        csoScreenRecv = new CsoScreenRecv();
+        // Device Admin
+        deviceManger = (DevicePolicyManager)getSystemService(Context.DEVICE_POLICY_SERVICE);
 
-        // Set up receiver :: TODO: not for prod!
-        IntentFilter filterScreen = new IntentFilter(Intent.ACTION_SCREEN_ON);
-        registerReceiver(csoScreenRecv, filterScreen);
+        // Sensor..
+        sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
+        proxSensor = sensorManager.getDefaultSensor(Sensor.TYPE_PROXIMITY);
+
+        // Prep receiver..
+        csoUnlockRecv = new CsoUnlockRecv();
+        csoUnlockRecvIntentFilter = new IntentFilter(Intent.ACTION_USER_PRESENT);
+
+        // Set up receiver
+        registerReceiver(csoUnlockRecv, csoUnlockRecvIntentFilter);
 
         // Toast it!
         Toast.makeText(CsoService.this, "CallScreenOff Service Active", Toast.LENGTH_SHORT).show();
@@ -98,20 +135,29 @@ public class CsoService extends Service {
         phoneListener = new PhoneStateListener() {
             @Override
             public void onCallStateChanged(int state, String incomingNumber) {
-                switch (state) {
-                    case TelephonyManager.CALL_STATE_OFFHOOK:
-                        handlePhoneCall(state,incomingNumber);
-                    case TelephonyManager.CALL_STATE_RINGING:
-                        handlePhoneCall(state,incomingNumber);
-                        break;
-                    case TelephonyManager.CALL_STATE_IDLE:
-                        // Phone idle
-                        break;
-                }
+                handlePhoneCall(state,incomingNumber);
             }
         };
         telephonyMgr.listen(phoneListener, PhoneStateListener.LISTEN_CALL_STATE);
 
+    }
+
+    // --- SENSOR
+
+    private void regProxListener() {
+        Log.d(APPTAG,"CsoService.regProxListener()");
+        nrOfSensorSamples = 0;
+        sensorManager.registerListener(this, proxSensor, SensorManager.SENSOR_DELAY_NORMAL);
+    }
+
+    private void unregProxListener() {
+        Log.d(APPTAG,"CsoService.unregProxListener()");
+        try {
+            sensorManager.unregisterListener(this);
+        } catch (Exception e) {
+            Log.e(APPTAG, " --> Unreg sensor listener ERROR: " + e.toString());
+            e.printStackTrace();
+        }
     }
 
     // --- HANDLE CALLS
@@ -121,64 +167,105 @@ public class CsoService extends Service {
         Log.d(APPTAG, "CsoService.handlePhoneCall(): "+ state);
 
         // Headset connected?
-        boolean btConnected = false;
+        btConnected = false;
         AudioManager am = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
         if(am.isBluetoothA2dpOn()) {
             btConnected = true;
         }
-        btConnected = true;
-
-        // (Un)register screen listener..
+        // btConnected = true; // TODO: FOR TESTING
 
         if (btConnected && state==TelephonyManager.CALL_STATE_OFFHOOK) {
+
             Log.d(APPTAG," -> BT && ofhook, reg listener");
 
-            // Keyguard (lockscreen)
-            KeyguardManager keyguardManager = (KeyguardManager) CsoService.this.getSystemService(Activity.KEYGUARD_SERVICE);
-            KeyguardManager.KeyguardLock lock = keyguardManager.newKeyguardLock(Activity.KEYGUARD_SERVICE);
+            // Init prox sensor
+            inCall = true;
+            regProxListener();
 
-            lock.disableKeyguard();
-            lock.reenableKeyguard();
-
-            // Set up receiver
-            IntentFilter filterScreen = new IntentFilter(Intent.ACTION_SCREEN_ON);
-            registerReceiver(csoScreenRecv, filterScreen);
 
         } else if (btConnected && state==TelephonyManager.CALL_STATE_IDLE) {
+
             Log.d(APPTAG," -> BT && idle, unreg listener");
 
-            // Keyguard (lockscreen)
-            KeyguardManager keyguardManager = (KeyguardManager) CsoService.this.getSystemService(Activity.KEYGUARD_SERVICE);
-            KeyguardManager.KeyguardLock lock = keyguardManager.newKeyguardLock(Activity.KEYGUARD_SERVICE);
-
-            lock.disableKeyguard();
-            lock.reenableKeyguard();
-
-            // Unreg listener..
-            try {
-                //unregisterReceiver(csoScreenRecv);
-            } catch(IllegalArgumentException e) {
-                Log.e(APPTAG," -> Error: "+ e);
-                Log.e(APPTAG,e.getStackTrace().toString());
-            }
+            // Stop prox sensor
+            inCall = false;
+            unregProxListener();
 
         } else {
+
             Log.d(APPTAG," -> No BT || ringing, unreg listener");
-            // Unreg listener..
-            try {
-                //unregisterReceiver(csoScreenRecv);
-            } catch(IllegalArgumentException e) {
-                Log.e(APPTAG," -> Error: "+ e);
-                Log.e(APPTAG,e.getStackTrace().toString());
-            }
+
+            // Stop prox sensor
+            inCall = false;
+            unregProxListener();
+
         }
 
         // Store..
-
         settEditor.putBoolean("btConnected", btConnected);
         settEditor.putInt("lastState", state);
         settEditor.putString("lastNumber", incomingNumber);
         settEditor.commit();
+
+    }
+
+    // ===================================================================
+    // Sensor
+
+    @Override
+    public void onAccuracyChanged(Sensor sensor, int accuracy) {
+        // nothing..
+    }
+
+    @Override
+    public void onSensorChanged(SensorEvent event) {
+        if (event.sensor.getType() == Sensor.TYPE_PROXIMITY) {
+            getProximity(event);
+        }
+
+    }
+
+    private void getProximity(SensorEvent event) {
+
+        // Values
+        float[] values = event.values;
+        float proxcm = values[0];
+
+        Log.d(APPTAG," --> Proximity: "+values[0]);
+
+        nrOfSensorSamples++;
+
+        if (proxcm<5) {
+            deviceManger.lockNow();
+        }
+
+        if (nrOfSensorSamples>1 || proxcm<5) {
+
+        }
+
+    }
+
+
+    // ===================================================================
+    // Receiver
+
+    public class CsoUnlockRecv extends BroadcastReceiver {
+
+        @Override
+        public void onReceive(Context _context, Intent _intent) {
+
+            Log.d(APPTAG,"CsoService.onReceive() -> Unlock");
+
+            if (!inCall || !btConnected) {
+                Log.d(APPTAG," -> Not in call, do nothing..");
+                unregProxListener();
+                return;
+            }
+
+            // Reg listener
+            regProxListener();
+
+        }
 
     }
 

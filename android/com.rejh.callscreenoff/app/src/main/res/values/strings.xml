@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">CallScreenOff</string>
+    <string name="device_admin_description">CallScreenOff needs permission to lock your device</string>
 </resources>
