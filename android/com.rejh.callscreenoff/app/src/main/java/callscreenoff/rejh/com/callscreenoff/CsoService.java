@@ -52,6 +52,8 @@ public class CsoService extends Service
     private boolean inCall = false;
     private int nrOfSensorSamples = 0;
 
+    private long hangupTimeInMillis = 0;
+
 
     // ===================================================================
     // Lifecycle
@@ -184,11 +186,14 @@ public class CsoService extends Service
 
         } else if (btConnected && state==TelephonyManager.CALL_STATE_IDLE) {
 
-            Log.d(APPTAG," -> BT && idle, unreg listener");
+            Log.d(APPTAG," -> BT && idle, reg listener");
 
             // Stop prox sensor
             inCall = false;
-            unregProxListener();
+            regProxListener();
+
+            // Store time
+            hangupTimeInMillis = System.currentTimeMillis();
 
         } else {
 
@@ -236,10 +241,7 @@ public class CsoService extends Service
 
         if (proxcm<5) {
             deviceManger.lockNow();
-        }
-
-        if (nrOfSensorSamples>1 || proxcm<5) {
-
+            unregProxListener();
         }
 
     }
@@ -255,7 +257,11 @@ public class CsoService extends Service
 
             Log.d(APPTAG,"CsoService.onReceive() -> Unlock");
 
-            if (!inCall || !btConnected) {
+            long hangupTimeMillisAgo = System.currentTimeMillis() - hangupTimeInMillis;
+
+            Log.d(APPTAG," -> HangupTimeMillisAgo: "+ hangupTimeMillisAgo);
+
+            if (!inCall && hangupTimeMillisAgo > 2500 || !btConnected) {
                 Log.d(APPTAG," -> Not in call, do nothing..");
                 unregProxListener();
                 return;
