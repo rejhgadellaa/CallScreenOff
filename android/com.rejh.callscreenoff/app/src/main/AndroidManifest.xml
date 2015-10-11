@@ -47,7 +47,7 @@
         <receiver
             android:name=".CsoAdminRecv"
             android:description="@string/device_admin_description"
-            android:label="CsoAdmin"
+            android:label="CallScreenOff"
             android:permission="android.permission.BIND_DEVICE_ADMIN" >
             <meta-data
                 android:name="android.app.device_admin"

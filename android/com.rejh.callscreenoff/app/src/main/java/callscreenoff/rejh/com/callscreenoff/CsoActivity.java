@@ -91,8 +91,9 @@ public class CsoActivity extends AppCompatActivity implements View.OnClickListen
             }
 
             // CMD_MOVE_TO_BACK
-            if (intent != null && intent.hasExtra("cmd_move_to_back") && intent.getBooleanExtra("cmd_move_to_back", false)) {
-                moveTaskToBack(true);
+            if (intent != null && intent.hasExtra("cmd_finish") && intent.getBooleanExtra("cmd_finish", false)) {
+                Log.d(APPTAG," -> Finish activity");
+                finish();
             }
 
 

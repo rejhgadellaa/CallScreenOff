@@ -36,7 +36,7 @@ public class CsoAdminRecv extends DeviceAdminReceiver{
 
     @Override
     public void onEnabled(Context context, Intent intent) {
-        showToast(context, "CsoAdminRecv enabled");
+        showToast(context, "CallScreenOff: Device Manager enabled");
     }
 
     @Override
@@ -48,7 +48,7 @@ public class CsoAdminRecv extends DeviceAdminReceiver{
 
     @Override
     public void onDisabled(Context context, Intent intent) {
-        showToast(context, "CsoAdminRecv onDisabled");
+        showToast(context, "CallScreenOff: Device Manager disabled");
     }
 
     @Override

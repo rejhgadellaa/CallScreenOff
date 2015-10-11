@@ -126,6 +126,10 @@ public class CsoService extends Service
 
         Log.i(APPTAG, "CsoService.onDestroy()");
 
+        // Unregister listeners..
+        unregProxListener();
+        telephonyMgr.listen(phoneListener, PhoneStateListener.LISTEN_NONE);
+
     }
 
     // ===================================================================
@@ -191,17 +195,17 @@ public class CsoService extends Service
 
         } else if (btConnected && state==TelephonyManager.CALL_STATE_IDLE) {
 
-            Log.d(APPTAG," -> BT && idle, reg listener");
+            Log.d(APPTAG," -> BT && idle, unreg listener");
+
+            // Stop prox sensor
+            inCall = false;
+            unregProxListener();
 
             // This event just fired because the service registered the listener...
             if (lastPhoneState<0) {
                 Log.d(APPTAG," --> lastPhoneState: "+ lastPhoneState +", do nothing");
                 return;
             }
-
-            // Stop prox sensor
-            inCall = false;
-            regProxListener();
 
             // Store time
             hangupTimeInMillis = System.currentTimeMillis();
@@ -211,7 +215,7 @@ public class CsoService extends Service
             activityIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK
                     | Intent.FLAG_ACTIVITY_CLEAR_TOP
                     | Intent.FLAG_ACTIVITY_SINGLE_TOP);
-            activityIntent.putExtra("cmd_move_to_back", true);
+            activityIntent.putExtra("cmd_finish", true);
             context.startActivity(activityIntent);
 
         } else {
