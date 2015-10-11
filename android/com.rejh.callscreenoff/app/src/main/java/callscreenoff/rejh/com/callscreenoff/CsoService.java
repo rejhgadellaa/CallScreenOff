@@ -50,7 +50,9 @@ public class CsoService extends Service
 
     private boolean btConnected;
     private boolean inCall = false;
-    private int nrOfSensorSamples = 0;
+
+    private int lastPhoneState = -1;
+    private float lastProxValue = -1.0f;
 
     private long hangupTimeInMillis = 0;
 
@@ -111,6 +113,9 @@ public class CsoService extends Service
         // Toast it!
         Toast.makeText(CsoService.this, "CallScreenOff Service Active", Toast.LENGTH_SHORT).show();
 
+        // TESTING:
+
+
     }
 
     // Destroy
@@ -147,12 +152,12 @@ public class CsoService extends Service
 
     private void regProxListener() {
         Log.d(APPTAG,"CsoService.regProxListener()");
-        nrOfSensorSamples = 0;
+        handleProxValue(lastProxValue); // run once in case sensor listener already active
         sensorManager.registerListener(this, proxSensor, SensorManager.SENSOR_DELAY_NORMAL);
     }
 
     private void unregProxListener() {
-        Log.d(APPTAG,"CsoService.unregProxListener()");
+        Log.d(APPTAG, "CsoService.unregProxListener()");
         try {
             sensorManager.unregisterListener(this);
         } catch (Exception e) {
@@ -188,12 +193,26 @@ public class CsoService extends Service
 
             Log.d(APPTAG," -> BT && idle, reg listener");
 
+            // This event just fired because the service registered the listener...
+            if (lastPhoneState<0) {
+                Log.d(APPTAG," --> lastPhoneState: "+ lastPhoneState +", do nothing");
+                return;
+            }
+
             // Stop prox sensor
             inCall = false;
             regProxListener();
 
             // Store time
             hangupTimeInMillis = System.currentTimeMillis();
+
+            // Close activity
+            Intent activityIntent = new Intent(context, CsoActivity.class);
+            activityIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK
+                    | Intent.FLAG_ACTIVITY_CLEAR_TOP
+                    | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+            activityIntent.putExtra("cmd_move_to_back", true);
+            context.startActivity(activityIntent);
 
         } else {
 
@@ -205,11 +224,7 @@ public class CsoService extends Service
 
         }
 
-        // Store..
-        settEditor.putBoolean("btConnected", btConnected);
-        settEditor.putInt("lastState", state);
-        settEditor.putString("lastNumber", incomingNumber);
-        settEditor.commit();
+        lastPhoneState = state;
 
     }
 
@@ -219,6 +234,9 @@ public class CsoService extends Service
     @Override
     public void onAccuracyChanged(Sensor sensor, int accuracy) {
         // nothing..
+        if (sensor.getType() == Sensor.TYPE_PROXIMITY) {
+            Log.d(APPTAG," --> Accuracy: "+ accuracy);
+        }
     }
 
     @Override
@@ -235,14 +253,41 @@ public class CsoService extends Service
         float[] values = event.values;
         float proxcm = values[0];
 
-        Log.d(APPTAG," --> Proximity: "+values[0]);
+        handleProxValue(proxcm);
 
-        nrOfSensorSamples++;
+    }
+
+    private void handleProxValue(float proxcm) {
+
+        Log.d(APPTAG," --> Proximity: "+proxcm);
+
+        if (proxcm<0) {
+            Log.d(APPTAG," --> proxcm: "+ proxcm +", do nothing");
+            return;
+        }
 
         if (proxcm<5) {
-            deviceManger.lockNow();
-            unregProxListener();
+
+            // Bring other app to front, that might help?
+            Intent activityIntent = new Intent(context, CsoActivity.class);
+            activityIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK
+                    | Intent.FLAG_ACTIVITY_CLEAR_TOP
+                    | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+            activityIntent.putExtra("cmd_lock_device",true);
+            context.startActivity(activityIntent);
+
+            // Prox listener..
+            long hangupTimeMillisAgo = System.currentTimeMillis() - hangupTimeInMillis;
+            Log.d(APPTAG, " -> HangupTimeMillisAgo: " + hangupTimeMillisAgo);
+            if (!inCall && hangupTimeMillisAgo > 2500 || !btConnected) {
+                Log.d(APPTAG," --> && unregProxListener");
+                unregProxListener();
+            }
+
         }
+
+        // Store value..
+        lastProxValue = proxcm;
 
     }
 
@@ -258,9 +303,7 @@ public class CsoService extends Service
             Log.d(APPTAG,"CsoService.onReceive() -> Unlock");
 
             long hangupTimeMillisAgo = System.currentTimeMillis() - hangupTimeInMillis;
-
             Log.d(APPTAG," -> HangupTimeMillisAgo: "+ hangupTimeMillisAgo);
-
             if (!inCall && hangupTimeMillisAgo > 2500 || !btConnected) {
                 Log.d(APPTAG," -> Not in call, do nothing..");
                 unregProxListener();

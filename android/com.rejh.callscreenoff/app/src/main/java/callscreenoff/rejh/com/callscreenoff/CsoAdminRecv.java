@@ -16,6 +16,8 @@ public class CsoAdminRecv extends DeviceAdminReceiver{
 
     private String APPTAG = "CallScreenOff";
 
+    Context context;
+
     // ===================================================================
     // Lifecycle
 
@@ -24,11 +26,12 @@ public class CsoAdminRecv extends DeviceAdminReceiver{
     }
 
     @Override
-    public void onReceive(Context context, Intent intent) {
+    public void onReceive(Context _context, Intent intent) {
+        context = _context;
         if (intent.getAction() == ACTION_DEVICE_ADMIN_DISABLE_REQUESTED) {
             abortBroadcast();
         }
-        super.onReceive(context, intent);
+        super.onReceive(_context, intent);
     }
 
     @Override
@@ -38,7 +41,9 @@ public class CsoAdminRecv extends DeviceAdminReceiver{
 
     @Override
     public CharSequence onDisableRequested(Context context, Intent intent) {
-        return "CsoAdminRecv TODO: onDisableRequested";
+        Intent serviceIntent = new Intent(context,CsoService.class);
+        context.stopService(serviceIntent);
+        return "CallScreenOff has been disabled";
     }
 
     @Override

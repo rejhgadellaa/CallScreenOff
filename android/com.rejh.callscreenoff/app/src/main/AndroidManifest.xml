@@ -21,7 +21,9 @@
         android:label="@string/app_name"
         android:supportsRtl="true"
         android:theme="@style/AppTheme" >
-        <activity android:name=".CsoActivity" >
+        <activity
+            android:name=".CsoActivity"
+            android:launchMode="singleTask">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -31,6 +33,7 @@
 
         <service
             android:name=".CsoService"
+            android:launchMode="singleTask"
             android:enabled="true"
             android:exported="true" >
         </service>

@@ -24,13 +24,15 @@ public class CsoActivity extends AppCompatActivity implements View.OnClickListen
     private SharedPreferences sett;
     private SharedPreferences.Editor settEditor;
 
-    DevicePolicyManager deviceManger;
-    ActivityManager activityManager;
-    ComponentName compName;
+    private DevicePolicyManager deviceManger;
+    private ActivityManager activityManager;
+    private ComponentName compName;
 
     static final int RESULT_ENABLE = 1;
 
     private Button button;
+
+    private long newIntentTime = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -65,12 +67,49 @@ public class CsoActivity extends AppCompatActivity implements View.OnClickListen
 
         Log.i(APPTAG, "CsoActivity.onResume()");
 
+        // Service?
         if (deviceManger.isAdminActive(compName)) {
             Log.d(APPTAG," -> Start service");
             startCsoService();
         } else {
             Log.d(APPTAG," -> Can't start service without admin permission");
         }
+
+        // CMD?
+        Intent intent = getIntent();
+        long newIntentTimeDiff = System.currentTimeMillis() - newIntentTime;
+        if (newIntentTimeDiff<1000) {
+
+            // CMD_LOCK_DEVICE
+            if (intent != null && intent.hasExtra("cmd_lock_device") && intent.getBooleanExtra("cmd_lock_device", false)) {
+                if (deviceManger.isAdminActive(compName)) {
+                    Log.d(APPTAG, " -> Lock device NOW");
+                    deviceManger.lockNow();
+                } else {
+                    Log.w(APPTAG, " -> Cannot lock device without device admin permission");
+                }
+            }
+
+            // CMD_MOVE_TO_BACK
+            if (intent != null && intent.hasExtra("cmd_move_to_back") && intent.getBooleanExtra("cmd_move_to_back", false)) {
+                moveTaskToBack(true);
+            }
+
+
+
+        }
+
+    }
+
+    @Override
+    public void onNewIntent (Intent _intent) {
+
+        super.onNewIntent(_intent);
+
+        Log.d(APPTAG, "CsoActivity.onNewIntent()");
+
+        newIntentTime = System.currentTimeMillis();
+        setIntent(_intent);
 
     }
 
