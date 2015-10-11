@@ -216,6 +216,9 @@ public class CsoService extends Service
                     | Intent.FLAG_ACTIVITY_CLEAR_TOP
                     | Intent.FLAG_ACTIVITY_SINGLE_TOP);
             activityIntent.putExtra("cmd_finish", true);
+            if (lastProxValue<5) {
+                activityIntent.putExtra("cmd_lock_device",true);
+            }
             context.startActivity(activityIntent);
 
         } else {

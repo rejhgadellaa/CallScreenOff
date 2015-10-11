@@ -43,7 +43,7 @@ public class CsoAdminRecv extends DeviceAdminReceiver{
     public CharSequence onDisableRequested(Context context, Intent intent) {
         Intent serviceIntent = new Intent(context,CsoService.class);
         context.stopService(serviceIntent);
-        return "CallScreenOff has been disabled";
+        return "Tap OK to disable CallScreenOff";
     }
 
     @Override

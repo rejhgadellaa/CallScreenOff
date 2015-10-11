@@ -8,11 +8,13 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.net.Uri;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.Toast;
 
 public class CsoActivity extends AppCompatActivity implements View.OnClickListener {
@@ -30,7 +32,8 @@ public class CsoActivity extends AppCompatActivity implements View.OnClickListen
 
     static final int RESULT_ENABLE = 1;
 
-    private Button button;
+    private Button button_enable;
+    private ImageView button_info;
 
     private long newIntentTime = 0;
 
@@ -38,7 +41,7 @@ public class CsoActivity extends AppCompatActivity implements View.OnClickListen
     protected void onCreate(Bundle savedInstanceState) {
 
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_cso);
+        setContentView(R.layout.activity_cso_intro);
 
         Log.i(APPTAG, "CsoActivity.onCreate()");
 
@@ -55,8 +58,13 @@ public class CsoActivity extends AppCompatActivity implements View.OnClickListen
         compName = new ComponentName(this, CsoAdminRecv.class);
 
         // GUI
-        button = (Button) findViewById(R.id.button);
-        button.setOnClickListener(this);
+        button_enable = (Button) findViewById(R.id.button_enable);
+        button_enable.setOnClickListener(this);
+        button_info = (ImageView) findViewById(R.id.button_info);
+        button_info.setOnClickListener(this);
+
+        // New Intent Time
+        newIntentTime = System.currentTimeMillis();
 
     }
 
@@ -69,10 +77,15 @@ public class CsoActivity extends AppCompatActivity implements View.OnClickListen
 
         // Service?
         if (deviceManger.isAdminActive(compName)) {
+            // Hide button_enable
+            button_enable.setVisibility(View.GONE);
+            // Start service
             Log.d(APPTAG," -> Start service");
             startCsoService();
         } else {
-            Log.d(APPTAG," -> Can't start service without admin permission");
+            Log.d(APPTAG, " -> Can't start service without admin permission");
+            // Hide button_enable
+            button_enable.setVisibility(View.VISIBLE);
         }
 
         // CMD?
@@ -118,11 +131,22 @@ public class CsoActivity extends AppCompatActivity implements View.OnClickListen
     public void onClick(View v) {
 
         // Enable Device Admin
-        if (v==button) {
+        if (v==button_enable) {
             Intent intent = new Intent(DevicePolicyManager.ACTION_ADD_DEVICE_ADMIN);
             intent.putExtra(DevicePolicyManager.EXTRA_DEVICE_ADMIN, compName);
             intent.putExtra(DevicePolicyManager.EXTRA_ADD_EXPLANATION, "CallScreenOff needs to be a Device Administrator so it can lock your phone.");
             startActivityForResult(intent, RESULT_ENABLE);
+        }
+
+        // Info
+        if (v==button_info) {
+            // For now just open a browser and point it to github..
+            String weburl = "https://github.com/rejhgadellaa/CallScreenOff/blob/master/README.md";
+            Uri weburi = Uri.parse(weburl);
+            Intent intent = new Intent(Intent.ACTION_VIEW, weburi);
+            if (intent.resolveActivity(getPackageManager()) != null) {
+                startActivity(intent);
+            }
         }
 
     }
