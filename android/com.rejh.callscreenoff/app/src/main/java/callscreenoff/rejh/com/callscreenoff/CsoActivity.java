@@ -9,15 +9,24 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
+import android.os.Environment;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.view.animation.AlphaAnimation;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
 
-public class CsoActivity extends AppCompatActivity implements View.OnClickListener {
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
+
+public class CsoActivity extends AppCompatActivity implements View.OnClickListener, View.OnLongClickListener {
 
     private String APPTAG = "CallScreenOff";
 
@@ -34,6 +43,8 @@ public class CsoActivity extends AppCompatActivity implements View.OnClickListen
 
     private Button button_enable;
     private ImageView button_info;
+    private ImageView button_feedback;
+    private TextView textview_nothingtosee;
 
     private long newIntentTime = 0;
 
@@ -62,6 +73,11 @@ public class CsoActivity extends AppCompatActivity implements View.OnClickListen
         button_enable.setOnClickListener(this);
         button_info = (ImageView) findViewById(R.id.button_info);
         button_info.setOnClickListener(this);
+        button_info.setOnLongClickListener(this);
+        button_feedback = (ImageView) findViewById(R.id.button_feedback);
+        button_feedback.setOnClickListener(this);
+        button_feedback.setOnLongClickListener(this);
+        textview_nothingtosee = (TextView) findViewById(R.id.textview_nothingtosee);
 
         // New Intent Time
         newIntentTime = System.currentTimeMillis();
@@ -79,6 +95,13 @@ public class CsoActivity extends AppCompatActivity implements View.OnClickListen
         if (deviceManger.isAdminActive(compName)) {
             // Hide button_enable
             button_enable.setVisibility(View.GONE);
+            // Show nothingtosee
+            AlphaAnimation anim = new AlphaAnimation(0.0f, 1.0f);
+            anim.setDuration(1000);
+            anim.setStartOffset(5000);
+            anim.setRepeatCount(0);
+            textview_nothingtosee.setVisibility(View.VISIBLE);
+            textview_nothingtosee.startAnimation(anim);
             // Start service
             Log.d(APPTAG," -> Start service");
             startCsoService();
@@ -86,6 +109,9 @@ public class CsoActivity extends AppCompatActivity implements View.OnClickListen
             Log.d(APPTAG, " -> Can't start service without admin permission");
             // Hide button_enable
             button_enable.setVisibility(View.VISIBLE);
+            // Show nothingtosee -> info
+            textview_nothingtosee.setVisibility(View.VISIBLE);
+            textview_nothingtosee.setText("CSO is currently disabled");
         }
 
         // CMD?
@@ -147,6 +173,30 @@ public class CsoActivity extends AppCompatActivity implements View.OnClickListen
             }
         }
 
+        // Feedback
+        if (v==button_feedback) {
+            sendFeedback();
+        }
+
+    }
+
+    @Override
+    public boolean onLongClick(View v) {
+
+        // Info
+        if (v==button_info) {
+            Toast.makeText(context, "Tap for info", Toast.LENGTH_SHORT).show();
+            return true;
+        }
+
+        // Feedback
+        if (v==button_feedback) {
+            Toast.makeText(context, "Send feedback", Toast.LENGTH_SHORT).show();
+            return true;
+        }
+
+        return false;
+
     }
 
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -172,6 +222,46 @@ public class CsoActivity extends AppCompatActivity implements View.OnClickListen
     private void startCsoService() {
         Intent serviceIntent = new Intent(CsoActivity.this, CsoService.class);
         startService(serviceIntent);
+    }
+
+    private void sendFeedback() {
+
+        String logstr = getlog();
+        File file = new File(Environment.getExternalStorageDirectory().toString(), "callscreenoff-logcat.txt");
+        FileOutputStream outputStream;
+        try {
+            outputStream = new FileOutputStream(file);
+            outputStream.write(logstr.getBytes());
+            outputStream.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        Intent emailIntent = new Intent(android.content.Intent.ACTION_SEND);
+        emailIntent.setType("text/plain");
+        emailIntent.putExtra(android.content.Intent.EXTRA_EMAIL, new String[]{"droidapps@rejh.nl"});
+        emailIntent.putExtra(android.content.Intent.EXTRA_SUBJECT,"CallScreenOff Feedback");
+        emailIntent.putExtra(android.content.Intent.EXTRA_TEXT, "");
+        emailIntent.putExtra(Intent.EXTRA_STREAM, Uri.parse("file://" + file.getAbsolutePath()));
+        startActivity(Intent.createChooser(emailIntent, "Send feedback..."));
+
+    }
+
+    private String getlog() {
+        StringBuilder log=new StringBuilder();
+        try {
+            Process process = Runtime.getRuntime().exec("logcat -v time -d ^(?!chromium)");
+            BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+
+            String line;
+            while ((line = bufferedReader.readLine()) != null) {
+                log.append(line+"\n");
+            }
+        } catch (IOException e) {
+            Log.e(APPTAG,"CsoActivity: getlog.IOException: "+e.toString());
+            e.printStackTrace();
+        }
+        return log.toString();
     }
 
 }

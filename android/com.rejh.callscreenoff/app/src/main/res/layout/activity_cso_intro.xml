@@ -9,14 +9,27 @@
     android:background="#009688">
 
     <ImageView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
         android:id="@+id/button_info"
         android:layout_alignParentTop="true"
-        android:layout_alignParentRight="true"
-        android:layout_alignParentEnd="true"
         android:src="@drawable/ic_action_action_info_outline"
-        android:background="?attr/selectableItemBackgroundBorderless" />
+        android:padding="0dp"
+        android:layout_alignRight="@+id/relativeLayout2"
+        android:layout_alignEnd="@+id/relativeLayout2"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:layout_marginLeft="24dp" />
+
+    <ImageView
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:id="@+id/button_feedback"
+        android:src="@drawable/ic_action_action_announcement"
+        android:padding="0dp"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:layout_alignParentTop="true"
+        android:layout_toLeftOf="@+id/button_info"
+        android:layout_marginTop="1dp" />
 
     <Button
         android:layout_width="wrap_content"
@@ -31,14 +44,17 @@
     <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_centerVertical="true"
-        android:layout_centerHorizontal="true">
+        android:id="@+id/relativeLayout2"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentEnd="true">
 
         <RelativeLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_centerVertical="true"
-            android:layout_centerHorizontal="true">
+            android:layout_centerHorizontal="true"
+            android:id="@+id/relativeLayout">
 
             <ImageView
                 android:layout_width="144dp"
@@ -60,6 +76,18 @@
                 android:layout_alignParentLeft="true"
                 android:layout_alignParentStart="true" />
         </RelativeLayout>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            android:text="(Nothing to see here)"
+            android:id="@+id/textview_nothingtosee"
+            android:layout_below="@+id/relativeLayout"
+            android:layout_centerHorizontal="true"
+            android:textColor="#fff"
+            android:visibility="invisible" />
+
     </RelativeLayout>
 
 </RelativeLayout>

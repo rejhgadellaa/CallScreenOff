@@ -98,6 +98,12 @@ public class CsoService extends Service
 
         // Device Admin
         deviceManger = (DevicePolicyManager)getSystemService(Context.DEVICE_POLICY_SERVICE);
+        ComponentName compName = new ComponentName(this, CsoAdminRecv.class);
+        if (!deviceManger.isAdminActive(compName)) {
+            Log.w(APPTAG," -> No Device Admin permission, shutdown");
+            stopSelf();
+            return;
+        }
 
         // Sensor..
         sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);

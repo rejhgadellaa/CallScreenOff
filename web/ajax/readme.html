@@ -13,15 +13,38 @@
   <li>Done!</li>
 </ol>
 
-<!--
-
 <h2 id="screenshots">Screenshots</h2>
 
-<p><center>
-<div class="screenshots"><img src="http://storage.rejh.nl/_stored/res/icerrr/screenshots/Screenshot_2015-10-01-09-14-02.png"><div class="space"></div><img src="http://storage.rejh.nl/_stored/res/icerrr/screenshots/Screenshot_2015-10-01-09-14-14.png"><div class="space"></div><img src="http://storage.rejh.nl/_stored/res/icerrr/screenshots/Screenshot_2015-10-01-09-06-28.png"><div class="space"></div><img src="http://storage.rejh.nl/_stored/res/icerrr/screenshots/Screenshot_2015-10-07-08-02-43.png"><div class="space"></div><img src="http://storage.rejh.nl/_stored/res/icerrr/screenshots/Screenshot_2015-10-07-08-04-50.png"></div>
-</center></p>
+<p>
+<div class="screenshots"><img src="http://storage.rejh.nl/_stored/res/callscreenoff/48f6b0cb-4afe-4f7a-a415-d8e508c31e93.png"><div class="space"></div><img src="http://storage.rejh.nl/_stored/res/callscreenoff/70d3e439-1bc5-44d3-9483-8e09310cb518.png"></div>
+</p>
 
--->
+<h2 id="permissions">Permissions</h2>
+
+<ul>
+    <li><strong>Read phone status and identity</strong><br>
+        This one should be obvious: CSO needs to know when you're in a call.<br>&nbsp;
+    </li>
+    <li><strong>Device Administrator: Lock your device</strong><br>
+        Required to lock your screen. This permission needs to be granted by you after installation.<br>&nbsp;
+    </li>
+    <li><strong>Run at startup</strong><br>
+        CSO runs a background service that registers a bunch of event listeners (like phone state events, screen unlocks, etc). This permission allows the service to automatically start when you (re)boot your device.<br>&nbsp;
+    </li>
+    <li><strong>Modify or delete the contents of your USB storage</strong><br>
+        Not really required but Android Studio keeps adding this permission..?
+    </li>
+</ul>
+
+<h2 id="permissions">Support &amp; troubleshooting</h2>
+
+<h3>Uninstalling</h3>
+
+<p>When you grant an app Device Administrator permissions, you can't just uninstall it. You need to disable these permissions first: Head into Settings > Security > Device Administrators and disable CallScreenOff.</p>
+
+<h3>Need more help?</h3>
+
+<p>Send me an email: <a href="mailto:droidapps@rejh.nl?subject=CallScreenOff Support Request">droidapps@rejh.nl</a></p>
 
 <h2 id="open-source">Find the project..</h2>
 
@@ -29,9 +52,9 @@
 
 <h2 id="get-the-app">Get the app!</h2>
 
-<p>Icerrr is currently not available through the Play Store but you can download and install it manually:</p>
+<p>CallScreenOff is available on Google Play:</p>
 
-<div class="download round4" onClick="window.open('http://bit.ly/1VMpISK');">
+<div class="download round4" onClick="window.open('https://play.google.com/store/apps/details?id=callscreenoff.rejh.com.callscreenoff');">
     <img class="icon" src="img/ic_download_w_48.png" />
     <div class="text">DOWNLOAD</div>
 </div>

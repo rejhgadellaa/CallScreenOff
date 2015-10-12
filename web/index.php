@@ -169,7 +169,7 @@
 
                 <!-- Legal -->
                 <div class="legal">
-                    <div class="item_wrap">Icerrr is open source and distributed under the MIT license</div>
+                    <div class="item_wrap">CallScreenOff is open source and distributed under the MIT license</div>
                     <div class="item_wrap">Copyright &copy; 2015 <a href="http://www.rejh.nl/" target="_blank">REJH Gadellaa</a></div>
 
                 </div>
