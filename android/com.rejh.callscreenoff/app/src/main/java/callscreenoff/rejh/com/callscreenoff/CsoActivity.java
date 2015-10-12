@@ -105,11 +105,9 @@ public class CsoActivity extends AppCompatActivity implements View.OnClickListen
 
             // CMD_MOVE_TO_BACK
             if (intent != null && intent.hasExtra("cmd_finish") && intent.getBooleanExtra("cmd_finish", false)) {
-                Log.d(APPTAG," -> Finish activity");
+                Log.d(APPTAG, " -> Finish activity");
                 finish();
             }
-
-
 
         }
 
@@ -141,7 +139,7 @@ public class CsoActivity extends AppCompatActivity implements View.OnClickListen
         // Info
         if (v==button_info) {
             // For now just open a browser and point it to github..
-            String weburl = "https://github.com/rejhgadellaa/CallScreenOff/blob/master/README.md";
+            String weburl = "http://www.rejh.nl/callscreenoff/";
             Uri weburi = Uri.parse(weburl);
             Intent intent = new Intent(Intent.ACTION_VIEW, weburi);
             if (intent.resolveActivity(getPackageManager()) != null) {

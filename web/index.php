@@ -28,11 +28,11 @@
 	<meta name="author" content="REJH Gadellaa">
 
     <!-- OpenGraph Snippet for fb, g+ -->
-    <meta property="og:site_name" content="ICERRR" />
-    <meta property="og:title" content="ICERRR" />
+    <meta property="og:site_name" content="CallScreenOff" />
+    <meta property="og:title" content="CallScreenOff" />
     <meta property="og:type" content="article" />
-    <meta property="og:image" content="http://rejh.nl/icerrr/img/web_hi_res_512_002.jpg" />
-    <meta property="og:description" content="The (clock radio) icecast streaming app." />
+    <meta property="og:image" content="http://rejh.nl/callscreenoff/img/ic_teal_512_spaced.png" />
+    <meta property="og:description" content="The app that keeps your screen turned off for Android" />
 
     <!-- IE: Use Chrome Frame if available, else latest IE9 renderer -->
     <meta http-equiv="X-UA-Compatible" content="IE=Edge,chrome=1">
@@ -137,7 +137,7 @@
         <div class="logo">
             <img src="img/ic_white_512_spaced.png" />
             <div class="title">CallScreenOff</div>
-            <div class="subtitle"><span class="theapp">The app that keeps your screen turned off</span> <span class="forandroid">for Android</span></div>
+            <div class="subtitle"><span class="theapp">The app that keeps your screen turned off -</span> <span class="forandroid">for Android</span></div>
         </div>
 
         <div class="logo_sml">
