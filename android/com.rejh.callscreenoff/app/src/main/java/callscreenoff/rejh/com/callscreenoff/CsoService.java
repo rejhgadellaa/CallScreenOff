@@ -286,17 +286,18 @@ public class CsoService extends Service
             btConnected = am.isBluetoothA2dpOn();
             if (!btConnected) {
                 // BT disconnected but keep proxListener on..
-                Log.d(APPTAG," --> btConnected == false?");
+                Log.d(APPTAG, " --> btConnected == false?");
                 lastProxValue = proxcm;
                 return;
             }
 
-            // Bring other app to front, that might help?
+            // Bring other app to front because dialer app will keep unlocking screen if it's active :S
+            // -- Who built that thing?!
             Intent activityIntent = new Intent(context, CsoActivity.class);
             activityIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK
                     | Intent.FLAG_ACTIVITY_CLEAR_TOP
                     | Intent.FLAG_ACTIVITY_SINGLE_TOP);
-            activityIntent.putExtra("cmd_lock_device",true);
+            activityIntent.putExtra("cmd_lock_device", true);
             context.startActivity(activityIntent);
 
             // Prox listener..
