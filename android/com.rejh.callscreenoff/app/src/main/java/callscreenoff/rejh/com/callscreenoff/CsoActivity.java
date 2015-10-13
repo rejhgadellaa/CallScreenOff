@@ -275,8 +275,8 @@ public class CsoActivity extends AppCompatActivity implements View.OnClickListen
         if(Build.VERSION.SDK_INT >= 23) {
             // Marshmallow detected
             PowerManager pm = (PowerManager) context.getSystemService(Context.POWER_SERVICE);
-            Log.d(APPTAG," --> sett:"+ sett.getBoolean("exceptedInactiveApps",false) +", ignore: "+ pm.isIgnoringBatteryOptimizations(context.getPackageName()));
-            if (!sett.getBoolean("exceptedInactiveApps",false) || !pm.isIgnoringBatteryOptimizations(context.getPackageName())) {
+            Log.d(APPTAG," --> Ignore batt optimizations: "+ pm.isIgnoringBatteryOptimizations(context.getPackageName()));
+            if (!pm.isIgnoringBatteryOptimizations(context.getPackageName())) {
                 AlertDialog.Builder builder = new AlertDialog.Builder(context);
                 builder.setMessage("We've detected you're running Android 6.0 Marshmallow (or higher). Congrats! "
                         + "However,this means a new feature called Inactive Apps may get in the way of CallScreenOff's ability to operate properly. "
@@ -296,8 +296,6 @@ public class CsoActivity extends AppCompatActivity implements View.OnClickListen
                 });
                 AlertDialog dialog = builder.create();
                 dialog.show();
-                settEditor.putBoolean("exceptedInactiveApps",true);
-                settEditor.commit();
                 return false;
             }
         }
