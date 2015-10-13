@@ -116,7 +116,7 @@
             });
 
             // Load readme..
-            $( "#readme" ).load( "ajax/readme.html", function() {
+            $( "#readme" ).load( "https://raw.githubusercontent.com/rejhgadellaa/CallScreenOff/master/web/ajax/readme.md", function() {
               console.log( " -> Loaded readme" );
               $(".footer").css("display","block");
             });
