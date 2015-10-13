@@ -6,10 +6,15 @@ import android.app.admin.DeviceAdminReceiver;
 import android.app.admin.DevicePolicyManager;
 import android.content.ComponentName;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Environment;
+import android.os.PowerManager;
+import android.provider.Settings;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -92,7 +97,7 @@ public class CsoActivity extends AppCompatActivity implements View.OnClickListen
         Log.i(APPTAG, "CsoActivity.onResume()");
 
         // Service?
-        if (deviceManger.isAdminActive(compName)) {
+        if (handleMarshMallowInactiveApp() && deviceManger.isAdminActive(compName)) {
             // Hide button_enable
             button_enable.setVisibility(View.GONE);
             // Show nothingtosee
@@ -262,6 +267,41 @@ public class CsoActivity extends AppCompatActivity implements View.OnClickListen
             e.printStackTrace();
         }
         return log.toString();
+    }
+
+    private boolean handleMarshMallowInactiveApp() {
+        Log.d(APPTAG," -> handleMarshMallowInactiveApp()");
+        Log.d(APPTAG," --> SDK: "+ Build.VERSION.SDK_INT);
+        if(Build.VERSION.SDK_INT >= 23) {
+            // Marshmallow detected
+            PowerManager pm = (PowerManager) context.getSystemService(Context.POWER_SERVICE);
+            Log.d(APPTAG," --> sett:"+ sett.getBoolean("exceptedInactiveApps",false) +", ignore: "+ pm.isIgnoringBatteryOptimizations(context.getPackageName()));
+            if (!sett.getBoolean("exceptedInactiveApps",false) || !pm.isIgnoringBatteryOptimizations(context.getPackageName())) {
+                AlertDialog.Builder builder = new AlertDialog.Builder(context);
+                builder.setMessage("We've detected you're running Android 6.0 Marshmallow (or higher). Congrats! "
+                        + "However,this means a new feature called Inactive Apps may get in the way of CallScreenOff's ability to operate properly. "
+                        + "\n\nIf you tap OK you'll be taken to the appropriate settings screen where you can make an exception.")
+                        .setTitle("Action required");
+                builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        Intent inactiveSettIntent = new Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS);
+                        context.startActivity(inactiveSettIntent);
+                    }
+                });
+                builder.setNegativeButton("Nope", new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        // User cancelled the dialog
+                        Toast.makeText(context, ":((((", Toast.LENGTH_SHORT).show();
+                    }
+                });
+                AlertDialog dialog = builder.create();
+                dialog.show();
+                settEditor.putBoolean("exceptedInactiveApps",true);
+                settEditor.commit();
+                return false;
+            }
+        }
+        return true;
     }
 
 }
