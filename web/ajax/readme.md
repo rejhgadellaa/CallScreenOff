@@ -58,10 +58,12 @@
 
 <p>CallScreenOff is available on Google Play:</p>
 
-<div class="download round4" onClick="window.open('https://play.google.com/store/apps/details?id=callscreenoff.rejh.com.callscreenoff');">
-    <img class="icon" src="img/ic_download_w_48.png" />
-    <div class="text">DOWNLOAD</div>
-</div>
+<p><center>
+<a href="https://play.google.com/music/m/B7xfx26eb6z3xbr7fdnjrrghj2u" target="_blank">
+  <img alt="Get it on Google Play" src="img/googleplay60.png" />
+</a>
+</center></p>
+
 
 <p>&nbsp;</p>
 
