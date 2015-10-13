@@ -38,6 +38,10 @@
 
 <h2 id="permissions">Support &amp; troubleshooting</h2>
 
+<h3>Android 6.0 Marshmallow</h3>
+
+<p>The latest version of Android introduced two new features: Doze and Inactive Apps (<a href="http://goo.gl/cYwmhM" target="_blank">learn more</a>). The latter of these can interfere with CallScreenOff by shutting down its background service. You should be prompted to make an exception for CallScreenOff - please make sure you do.</p>
+
 <h3>Uninstalling</h3>
 
 <p>When you grant an app Device Administrator permissions, you can't just uninstall it. You need to disable these permissions first: Head into Settings > Security > Device Administrators and disable CallScreenOff.</p>
