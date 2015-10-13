@@ -53,6 +53,8 @@ public class CsoActivity extends AppCompatActivity implements View.OnClickListen
 
     private long newIntentTime = 0;
 
+    private boolean dialogActive = false;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
 
@@ -276,7 +278,7 @@ public class CsoActivity extends AppCompatActivity implements View.OnClickListen
             // Marshmallow detected
             PowerManager pm = (PowerManager) context.getSystemService(Context.POWER_SERVICE);
             Log.d(APPTAG," --> Ignore batt optimizations: "+ pm.isIgnoringBatteryOptimizations(context.getPackageName()));
-            if (!pm.isIgnoringBatteryOptimizations(context.getPackageName())) {
+            if (!pm.isIgnoringBatteryOptimizations(context.getPackageName()) && !dialogActive) {
                 AlertDialog.Builder builder = new AlertDialog.Builder(context);
                 builder.setMessage("We've detected you're running Android 6.0 Marshmallow (or higher). Congrats! "
                         + "However,this means a new feature called Inactive Apps may get in the way of CallScreenOff's ability to operate properly. "
