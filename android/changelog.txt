@@ -1,2 +1,5 @@
-0.001
-  * Nothing yet..
+1.02.00
+  * Detect Android 6.0 Marshmallow and ask user to whitelist CSO from Inactive Apps
+
+1.01.00
+  * Initial release!
