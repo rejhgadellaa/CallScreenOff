@@ -281,6 +281,16 @@ public class CsoService extends Service
 
         if (proxcm<5) {
 
+            // Check bt before taking action..
+            AudioManager am = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
+            btConnected = am.isBluetoothA2dpOn();
+            if (!btConnected) {
+                // BT disconnected but keep proxListener on..
+                Log.d(APPTAG," --> btConnected == false?");
+                lastProxValue = proxcm;
+                return;
+            }
+
             // Bring other app to front, that might help?
             Intent activityIntent = new Intent(context, CsoActivity.class);
             activityIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK
