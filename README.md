@@ -10,3 +10,8 @@ The idea is as follows:
   4. CallScreenOff uses the proximity sensor to determine if your device is in your pocket: if yes goto 5, else do nothing
   5. Use Device Manager to lock your screen
   6. Done!
+  7. 
+
+More info
+-------------
+http://www.rejh.nl/callscreenoff/
