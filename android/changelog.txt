@@ -1,3 +1,6 @@
+1.02.01
+  * Prevent multiple dialogs
+
 1.02.00
   * Detect Android 6.0 Marshmallow and ask user to whitelist CSO from Inactive Apps
 
