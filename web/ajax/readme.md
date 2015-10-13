@@ -59,7 +59,7 @@
 <p>CallScreenOff is available on Google Play:</p>
 
 <p><center>
-<a href="https://play.google.com/music/m/B7xfx26eb6z3xbr7fdnjrrghj2u" target="_blank">
+<a href="https://goo.gl/vnfh9j" target="_blank">
   <img alt="Get it on Google Play" src="img/googleplay60.png" />
 </a>
 </center></p>
