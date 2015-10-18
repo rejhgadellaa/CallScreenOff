@@ -16,7 +16,7 @@
 <h2 id="screenshots">Screenshots</h2>
 
 <p>
-<div class="screenshots"><img src="http://storage.rejh.nl/_stored/res/callscreenoff/48f6b0cb-4afe-4f7a-a415-d8e508c31e93.png"><div class="space"></div><img src="http://storage.rejh.nl/_stored/res/callscreenoff/70d3e439-1bc5-44d3-9483-8e09310cb518.png"></div>
+<div class="screenshots"><img src="http://static.rejh.nl/rgt/rgt.php?w=128&h=320&src=http://storage.rejh.nl/_stored/res/callscreenoff/48f6b0cb-4afe-4f7a-a415-d8e508c31e93.png"><div class="space"></div><img src="http://static.rejh.nl/rgt/rgt.php?w=128&h=320&src=http://storage.rejh.nl/_stored/res/callscreenoff/70d3e439-1bc5-44d3-9483-8e09310cb518.png"></div>
 </p>
 
 <h2 id="permissions">Permissions</h2>

@@ -103,6 +103,7 @@ public class CsoActivity extends AppCompatActivity implements View.OnClickListen
             // Hide button_enable
             button_enable.setVisibility(View.GONE);
             // Show nothingtosee
+            textview_nothingtosee.setText("( Nothing to see here )");
             AlphaAnimation anim = new AlphaAnimation(0.0f, 1.0f);
             anim.setDuration(1000);
             anim.setStartOffset(5000);
@@ -281,19 +282,21 @@ public class CsoActivity extends AppCompatActivity implements View.OnClickListen
             if (!pm.isIgnoringBatteryOptimizations(context.getPackageName()) && !dialogActive) {
                 AlertDialog.Builder builder = new AlertDialog.Builder(context);
                 builder.setMessage("We've detected you're running Android 6.0 Marshmallow (or higher). Congrats! "
-                        + "However,this means a new feature called Inactive Apps may get in the way of CallScreenOff's ability to operate properly. "
+                        + "However, this means a new feature called Inactive Apps may get in the way of CallScreenOff's ability to operate properly. "
                         + "\n\nIf you tap OK you'll be taken to the appropriate settings screen where you can make an exception.")
                         .setTitle("Action required");
                 builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int id) {
                         Intent inactiveSettIntent = new Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS);
                         context.startActivity(inactiveSettIntent);
+                        dialogActive = false;
                     }
                 });
                 builder.setNegativeButton("Nope", new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int id) {
                         // User cancelled the dialog
-                        Toast.makeText(context, ":((((", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(context, "", Toast.LENGTH_SHORT).show();
+                        dialogActive = false;
                     }
                 });
                 AlertDialog dialog = builder.create();

@@ -56,6 +56,8 @@ public class CsoService extends Service
 
     private long hangupTimeInMillis = 0;
 
+    private boolean justRegisteredTelephonyListener = false;
+
 
     // ===================================================================
     // Lifecycle
@@ -92,7 +94,14 @@ public class CsoService extends Service
         }
         catch(Exception e) { Log.e(APPTAG," -> MakeSticky Exception: "+e); }
 
+        // Restore values..
+        btConnected = sett.getBoolean("csoService_btConnected",false);
+        lastPhoneState = sett.getInt("csoService_lastPhoneState",-1);
+        lastProxValue = sett.getFloat("csoService_lastProxValue", -1.0f);
+        hangupTimeInMillis = sett.getLong("csoService_hangupTimeInMillis",0);
+
         // TelephonyManager ++ Listener
+        justRegisteredTelephonyListener = true;
         telephonyMgr = (TelephonyManager) getSystemService(TELEPHONY_SERVICE);
         setupTelephonyListener();
 
@@ -210,6 +219,12 @@ public class CsoService extends Service
             // This event just fired because the service registered the listener...
             if (lastPhoneState<0) {
                 Log.d(APPTAG," --> lastPhoneState: "+ lastPhoneState +", do nothing");
+                return;
+            }
+            // Same here..
+            if (justRegisteredTelephonyListener) {
+                Log.d(APPTAG," --> lastPhoneState: "+ lastPhoneState +", justRegisteredTelephonyListener, do nothing");
+                justRegisteredTelephonyListener = false;
                 return;
             }
 
@@ -339,6 +354,18 @@ public class CsoService extends Service
 
         }
 
+    }
+
+
+    // ===================================================================
+    // Helpers
+
+    public void storeValues() {
+        settEditor.putBoolean("csoService_btConnected",btConnected);
+        settEditor.putInt("csoService_lastPhoneState", lastPhoneState);
+        settEditor.putFloat("csoService_lastProxValue", lastProxValue);
+        settEditor.putLong("csoService_hangupTimeInMillis",hangupTimeInMillis);
+        settEditor.commit();
     }
 
 
