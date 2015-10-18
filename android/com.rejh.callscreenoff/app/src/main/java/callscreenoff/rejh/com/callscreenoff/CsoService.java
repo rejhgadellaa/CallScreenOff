@@ -3,6 +3,7 @@ package callscreenoff.rejh.com.callscreenoff;
 import android.app.Activity;
 import android.app.IntentService;
 import android.app.KeyguardManager;
+import android.app.Notification;
 import android.app.Service;
 import android.app.admin.DevicePolicyManager;
 import android.content.BroadcastReceiver;
@@ -23,12 +24,22 @@ import android.telephony.TelephonyManager;
 import android.util.Log;
 import android.widget.Toast;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import callscreenoff.rejh.com.callscreenoff.callscreenoff.rejh.com.callscreenoff.helpers.NotifBuilder;
+
 public class CsoService extends Service
         implements SensorEventListener
 {
 
     // ===================================================================
     // Objects and variables..
+
+    private String APPTAG = "CallScreenOff";
+
+    private SharedPreferences sett;
+    private SharedPreferences.Editor settEditor;
 
     private Context context;
 
@@ -40,13 +51,11 @@ public class CsoService extends Service
     private SensorManager sensorManager;
     private Sensor proxSensor;
 
+    private NotifBuilder notifBuilder;
+    private final static int NOTIF_FOREGROUND_ID = 1;
+
     private CsoUnlockRecv csoUnlockRecv;
     private IntentFilter csoUnlockRecvIntentFilter;
-
-    private SharedPreferences sett;
-    private SharedPreferences.Editor settEditor;
-
-    private String APPTAG = "CallScreenOff";
 
     private boolean btConnected;
     private boolean inCall = false;
@@ -117,6 +126,9 @@ public class CsoService extends Service
         // Sensor..
         sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
         proxSensor = sensorManager.getDefaultSensor(Sensor.TYPE_PROXIMITY);
+
+        // notifBuilder
+        notifBuilder = new NotifBuilder(context);
 
         // Prep receiver..
         csoUnlockRecv = new CsoUnlockRecv();
@@ -203,6 +215,8 @@ public class CsoService extends Service
 
             Log.d(APPTAG," -> BT && ofhook, reg listener");
 
+            goForeground();
+
             // Init prox sensor
             inCall = true;
             regProxListener();
@@ -212,6 +226,8 @@ public class CsoService extends Service
 
             Log.d(APPTAG," -> BT && idle, unreg listener");
 
+            leaveForeground();
+
             // Stop prox sensor
             inCall = false;
             unregProxListener();
@@ -219,12 +235,14 @@ public class CsoService extends Service
             // This event just fired because the service registered the listener...
             if (lastPhoneState<0) {
                 Log.d(APPTAG," --> lastPhoneState: "+ lastPhoneState +", do nothing");
+                lastPhoneState = state;
                 return;
             }
             // Same here..
             if (justRegisteredTelephonyListener) {
                 Log.d(APPTAG," --> lastPhoneState: "+ lastPhoneState +", justRegisteredTelephonyListener, do nothing");
                 justRegisteredTelephonyListener = false;
+                lastPhoneState = state;
                 return;
             }
 
@@ -242,9 +260,15 @@ public class CsoService extends Service
             }
             context.startActivity(activityIntent);
 
+        } else if (btConnected && state==TelephonyManager.CALL_STATE_RINGING) {
+
+            Log.d(APPTAG," -> BT && ringing, go foreground..");
+
+            goForeground();
+
         } else {
 
-            Log.d(APPTAG," -> No BT || ringing, unreg listener");
+            Log.d(APPTAG," -> No BT, unreg listener");
 
             // Stop prox sensor
             inCall = false;
@@ -253,6 +277,8 @@ public class CsoService extends Service
         }
 
         lastPhoneState = state;
+
+        storeValues();
 
     }
 
@@ -282,6 +308,8 @@ public class CsoService extends Service
         float proxcm = values[0];
 
         handleProxValue(proxcm);
+
+        storeValues();
 
     }
 
@@ -358,9 +386,59 @@ public class CsoService extends Service
 
 
     // ===================================================================
+    // Notifications
+
+    private void goForeground() {
+
+        Log.d(APPTAG,"CsoService.goForeground()");
+
+        try {
+
+            JSONObject opts = new JSONObject();
+            opts.put("title","CallScreenOff");
+            opts.put("message","Ongoing call");
+            opts.put("smallicon","ic_stat_notification_phone_locked");
+            opts.put("color","#009688");
+            opts.put("priority","MIN");
+            opts.put("ongoing",true);
+            opts.put("alertOnce",true);
+
+            JSONObject intentopt = new JSONObject();
+            intentopt.put("type","activity");
+            intentopt.put("package","callscreenoff.rejh.com.callscreenoff");
+            intentopt.put("classname","callscreenoff.rejh.com.callscreenoff.CsoActivity");
+            opts.put("intent", intentopt);
+
+            Notification foregroundNotifObj = notifBuilder.build(NOTIF_FOREGROUND_ID, opts);
+
+            startForeground(NOTIF_FOREGROUND_ID,foregroundNotifObj);
+
+        } catch(JSONException e) {
+            Log.e(APPTAG,"CsoService.goForeground().JSONException: "+e,e);
+        }
+
+    }
+
+    private void leaveForeground() {
+
+        Log.d(APPTAG,"CsoService.leaveForeground()");
+
+        try {
+
+            stopForeground(true);
+
+        } catch(Exception e) {
+            Log.w(APPTAG, "CsoService.leaveForeground().Exception: "+e,e);
+        }
+
+    }
+
+
+    // ===================================================================
     // Helpers
 
     public void storeValues() {
+        Log.d(APPTAG,"CsoService.storeValues()");
         settEditor.putBoolean("csoService_btConnected",btConnected);
         settEditor.putInt("csoService_lastPhoneState", lastPhoneState);
         settEditor.putFloat("csoService_lastProxValue", lastProxValue);
