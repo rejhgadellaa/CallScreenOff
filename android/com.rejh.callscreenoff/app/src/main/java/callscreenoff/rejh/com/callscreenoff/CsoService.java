@@ -140,8 +140,8 @@ public class CsoService extends Service
         // Toast it!
         Toast.makeText(CsoService.this, "CallScreenOff Service Active", Toast.LENGTH_SHORT).show();
 
-        // TESTING:
-
+        // Listen for values once to get things started..
+        regProxListener();
 
     }
 
@@ -209,7 +209,7 @@ public class CsoService extends Service
         if(am.isBluetoothA2dpOn()) {
             btConnected = true;
         }
-        // btConnected = true; // TODO: FOR TESTING
+        //btConnected = true; // TODO: FOR TESTING
 
         if (btConnected && state==TelephonyManager.CALL_STATE_OFFHOOK) {
 
@@ -327,30 +327,33 @@ public class CsoService extends Service
             // Check bt before taking action..
             AudioManager am = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
             btConnected = am.isBluetoothA2dpOn();
-            if (!btConnected) {
+            //btConnected = true;  // TODO: FOR TESTING
+            if (btConnected) {
+
+                // Bring other app to front because dialer app will keep unlocking screen if it's active :S
+                // -- Who built that thing?!
+                Intent activityIntent = new Intent(context, CsoActivity.class);
+                activityIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK
+                        | Intent.FLAG_ACTIVITY_CLEAR_TOP
+                        | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+                activityIntent.putExtra("cmd_lock_device", true);
+                context.startActivity(activityIntent);
+
+            } else {
+
                 // BT disconnected but keep proxListener on..
                 Log.d(APPTAG, " --> btConnected == false?");
-                lastProxValue = proxcm;
-                return;
+
             }
 
-            // Bring other app to front because dialer app will keep unlocking screen if it's active :S
-            // -- Who built that thing?!
-            Intent activityIntent = new Intent(context, CsoActivity.class);
-            activityIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK
-                    | Intent.FLAG_ACTIVITY_CLEAR_TOP
-                    | Intent.FLAG_ACTIVITY_SINGLE_TOP);
-            activityIntent.putExtra("cmd_lock_device", true);
-            context.startActivity(activityIntent);
+        }
 
-            // Prox listener..
-            long hangupTimeMillisAgo = System.currentTimeMillis() - hangupTimeInMillis;
-            Log.d(APPTAG, " -> HangupTimeMillisAgo: " + hangupTimeMillisAgo);
-            if (!inCall && hangupTimeMillisAgo > 2500 || !btConnected) {
-                Log.d(APPTAG," --> && unregProxListener");
-                unregProxListener();
-            }
-
+        // Prox listener..
+        long hangupTimeMillisAgo = System.currentTimeMillis() - hangupTimeInMillis;
+        Log.d(APPTAG, " -> HangupTimeMillisAgo: " + hangupTimeMillisAgo);
+        if (!inCall && hangupTimeMillisAgo > 2500 || !btConnected) {
+            Log.d(APPTAG, " --> && unregProxListener");
+            unregProxListener();
         }
 
         // Store value..
