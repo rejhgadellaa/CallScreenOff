@@ -1,3 +1,7 @@
+1.03.00
+  * Prevent service from being killed during calls
+  * Tweaks, fixes, improvements
+
 1.02.01
   * Prevent multiple dialogs on Marshmallow
 
