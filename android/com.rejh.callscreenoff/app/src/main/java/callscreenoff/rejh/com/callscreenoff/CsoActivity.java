@@ -13,12 +13,14 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Environment;
 import android.os.PowerManager;
+import android.os.SystemClock;
 import android.provider.Settings;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.view.WindowManager;
 import android.view.animation.AlphaAnimation;
 import android.widget.Button;
 import android.widget.ImageView;
@@ -40,6 +42,7 @@ public class CsoActivity extends AppCompatActivity implements View.OnClickListen
     private SharedPreferences sett;
     private SharedPreferences.Editor settEditor;
 
+    private PowerManager powerMgr;
     private DevicePolicyManager deviceManger;
     private ActivityManager activityManager;
     private ComponentName compName;
@@ -71,6 +74,7 @@ public class CsoActivity extends AppCompatActivity implements View.OnClickListen
         settEditor = sett.edit();
 
         // Managers and stuff
+        powerMgr = (PowerManager) context.getSystemService(Context.POWER_SERVICE);
         deviceManger = (DevicePolicyManager)getSystemService(Context.DEVICE_POLICY_SERVICE);
         activityManager = (ActivityManager)getSystemService(Context.ACTIVITY_SERVICE);
         compName = new ComponentName(this, CsoAdminRecv.class);
@@ -132,6 +136,14 @@ public class CsoActivity extends AppCompatActivity implements View.OnClickListen
                 if (deviceManger.isAdminActive(compName)) {
                     Log.d(APPTAG, " -> Lock device NOW");
                     deviceManger.lockNow();
+                    /*
+                    if (powerMgr.isScreenOn()) {
+                        WindowManager.LayoutParams params = getWindow().getAttributes();
+                        params.flags |= WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON;
+                        params.screenBrightness = 0;
+                        getWindow().setAttributes(params);
+                    }
+                    /**/
                 } else {
                     Log.w(APPTAG, " -> Cannot lock device without device admin permission");
                 }

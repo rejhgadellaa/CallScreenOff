@@ -19,6 +19,7 @@ import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import android.media.AudioManager;
 import android.os.IBinder;
+import android.os.PowerManager;
 import android.telephony.PhoneStateListener;
 import android.telephony.TelephonyManager;
 import android.util.Log;
@@ -48,6 +49,9 @@ public class CsoService extends Service
 
     private DevicePolicyManager deviceManger;
 
+    private PowerManager powerMgr;
+    private PowerManager.WakeLock wakeLock;
+
     private SensorManager sensorManager;
     private Sensor proxSensor;
 
@@ -59,6 +63,7 @@ public class CsoService extends Service
 
     private boolean btConnected;
     private boolean inCall = false;
+    private boolean hasHungUp = false;
 
     private int lastPhoneState = -1;
     private float lastProxValue = -1.0f;
@@ -104,8 +109,8 @@ public class CsoService extends Service
         catch(Exception e) { Log.e(APPTAG," -> MakeSticky Exception: "+e); }
 
         // Restore values..
-        btConnected = sett.getBoolean("csoService_btConnected",false);
-        lastPhoneState = sett.getInt("csoService_lastPhoneState",-1);
+        btConnected = sett.getBoolean("csoService_btConnected", false);
+        lastPhoneState = sett.getInt("csoService_lastPhoneState", -1);
         lastProxValue = sett.getFloat("csoService_lastProxValue", -1.0f);
         hangupTimeInMillis = sett.getLong("csoService_hangupTimeInMillis",0);
 
@@ -123,6 +128,9 @@ public class CsoService extends Service
             return;
         }
 
+        // Power Manager
+        powerMgr = (PowerManager) context.getSystemService(Context.POWER_SERVICE);
+
         // Sensor..
         sensorManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
         proxSensor = sensorManager.getDefaultSensor(Sensor.TYPE_PROXIMITY);
@@ -133,6 +141,7 @@ public class CsoService extends Service
         // Prep receiver..
         csoUnlockRecv = new CsoUnlockRecv();
         csoUnlockRecvIntentFilter = new IntentFilter(Intent.ACTION_USER_PRESENT);
+        csoUnlockRecvIntentFilter.addAction(Intent.ACTION_SCREEN_ON);
 
         // Set up receiver
         registerReceiver(csoUnlockRecv, csoUnlockRecvIntentFilter);
@@ -203,6 +212,12 @@ public class CsoService extends Service
 
         Log.d(APPTAG, "CsoService.handlePhoneCall(): "+ state);
 
+        if (wakeLock!=null && wakeLock.isHeld()) {
+            wakeLock.release();
+        }
+        wakeLock = powerMgr.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK,APPTAG);
+        wakeLock.acquire(10*1000);
+
         // Headset connected?
         btConnected = false;
         AudioManager am = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
@@ -213,23 +228,25 @@ public class CsoService extends Service
 
         if (btConnected && state==TelephonyManager.CALL_STATE_OFFHOOK) {
 
-            Log.d(APPTAG," -> BT && ofhook, reg listener");
+            Log.d(APPTAG, " -> BT && ofhook, reg listener");
 
             goForeground();
 
             // Init prox sensor
             inCall = true;
+            hasHungUp = false;
             regProxListener();
 
 
         } else if (btConnected && state==TelephonyManager.CALL_STATE_IDLE) {
 
-            Log.d(APPTAG," -> BT && idle, unreg listener");
+            Log.d(APPTAG, " -> BT && idle, unreg listener");
 
             leaveForeground();
 
             // Stop prox sensor
             inCall = false;
+            hasHungUp = true;
             unregProxListener();
 
             // This event just fired because the service registered the listener...
@@ -262,9 +279,11 @@ public class CsoService extends Service
 
         } else if (btConnected && state==TelephonyManager.CALL_STATE_RINGING) {
 
-            Log.d(APPTAG," -> BT && ringing, go foreground..");
+            Log.d(APPTAG, " -> BT && ringing, go foreground..");
 
             goForeground();
+            inCall = false;
+            hasHungUp = false;
 
         } else {
 
@@ -272,7 +291,9 @@ public class CsoService extends Service
 
             // Stop prox sensor
             inCall = false;
+            hasHungUp = false;
             unregProxListener();
+            leaveForeground();
 
         }
 
@@ -337,6 +358,9 @@ public class CsoService extends Service
                         | Intent.FLAG_ACTIVITY_CLEAR_TOP
                         | Intent.FLAG_ACTIVITY_SINGLE_TOP);
                 activityIntent.putExtra("cmd_lock_device", true);
+                if (!inCall) {
+                    activityIntent.putExtra("cmd_finish", true);
+                }
                 context.startActivity(activityIntent);
 
             } else {
@@ -372,12 +396,20 @@ public class CsoService extends Service
 
             Log.d(APPTAG,"CsoService.onReceive() -> Unlock");
 
+            String action = _intent.getAction();
+            Log.d(APPTAG," -> Action: "+ action);
+
             long hangupTimeMillisAgo = System.currentTimeMillis() - hangupTimeInMillis;
-            Log.d(APPTAG," -> HangupTimeMillisAgo: "+ hangupTimeMillisAgo);
-            if (!inCall && hangupTimeMillisAgo > 2500 || !btConnected) {
+            Log.d(APPTAG, " -> HangupTimeMillisAgo: " + hangupTimeMillisAgo);
+            if (!inCall && !hasHungUp && hangupTimeMillisAgo > 2500 || !btConnected) {
                 Log.d(APPTAG," -> Not in call, do nothing..");
                 unregProxListener();
                 return;
+            }
+
+            // Handle hasHungUp
+            if (!inCall && hasHungUp) {
+                hasHungUp = false;
             }
 
             // Reg listener
