@@ -1,3 +1,6 @@
+1.03.02
+  * Bugfixes
+
 1.03.01
   * Fix: Ongoing call notification sometimes not dismissed
   * Improved: detect 'screen on' event after calls (not only unlock)

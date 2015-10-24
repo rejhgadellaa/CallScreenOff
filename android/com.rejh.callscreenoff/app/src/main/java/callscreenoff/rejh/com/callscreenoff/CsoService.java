@@ -244,9 +244,11 @@ public class CsoService extends Service
 
             leaveForeground();
 
-            // Stop prox sensor
+            // Reset some values, stop prox sensor
+            if (inCall) { // if we were in a call than we hung up, right?
+                hasHungUp = true;
+            }
             inCall = false;
-            hasHungUp = true;
             unregProxListener();
 
             // This event just fired because the service registered the listener...
@@ -400,8 +402,9 @@ public class CsoService extends Service
             Log.d(APPTAG," -> Action: "+ action);
 
             long hangupTimeMillisAgo = System.currentTimeMillis() - hangupTimeInMillis;
-            Log.d(APPTAG, " -> HangupTimeMillisAgo: " + hangupTimeMillisAgo);
-            if (!inCall && !hasHungUp && hangupTimeMillisAgo > 2500 || !btConnected) {
+            Log.d(APPTAG," -> inCall: "+ inCall +", hasHungUp: "+ hasHungUp +", btConnected: "+ btConnected);
+            Log.d(APPTAG," -> HangupTimeMillisAgo: " + hangupTimeMillisAgo);
+            if (!inCall && !hasHungUp && hangupTimeMillisAgo > 5000 || !btConnected) {
                 Log.d(APPTAG," -> Not in call, do nothing..");
                 unregProxListener();
                 return;
@@ -409,6 +412,7 @@ public class CsoService extends Service
 
             // Handle hasHungUp
             if (!inCall && hasHungUp) {
+                Log.d(APPTAG," -> hasHungUp = true, set false");
                 hasHungUp = false;
             }
 
