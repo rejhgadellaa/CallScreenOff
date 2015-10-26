@@ -90,8 +90,9 @@ public class CsoActivity extends AppCompatActivity implements View.OnClickListen
         button_feedback.setOnLongClickListener(this);
         textview_nothingtosee = (TextView) findViewById(R.id.textview_nothingtosee);
 
-        // New Intent Time
-        newIntentTime = System.currentTimeMillis();
+        // Invoke onNewIntent
+        Log.d(APPTAG," -> Invoke onNewIntent");
+        onNewIntent(getIntent());
 
     }
 
