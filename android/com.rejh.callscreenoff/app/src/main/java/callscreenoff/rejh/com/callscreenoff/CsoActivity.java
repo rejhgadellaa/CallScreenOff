@@ -9,6 +9,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Color;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Environment;
@@ -106,7 +107,8 @@ public class CsoActivity extends AppCompatActivity implements View.OnClickListen
         // Service?
         if (handleMarshMallowInactiveApp() && deviceManger.isAdminActive(compName)) {
             // Hide button_enable
-            button_enable.setVisibility(View.GONE);
+            // button_enable.setVisibility(View.GONE);
+            button_enable.setText("Disable");
             // Show nothingtosee
             textview_nothingtosee.setText("( Nothing to see here )");
             AlphaAnimation anim = new AlphaAnimation(0.0f, 1.0f);
@@ -120,8 +122,7 @@ public class CsoActivity extends AppCompatActivity implements View.OnClickListen
             startCsoService();
         } else {
             Log.d(APPTAG, " -> Can't start service without admin permission");
-            // Hide button_enable
-            button_enable.setVisibility(View.VISIBLE);
+            button_enable.setText("Enable");
             // Show nothingtosee -> info
             textview_nothingtosee.setVisibility(View.VISIBLE);
             textview_nothingtosee.setText("CSO is currently disabled");
@@ -177,10 +178,17 @@ public class CsoActivity extends AppCompatActivity implements View.OnClickListen
 
         // Enable Device Admin
         if (v==button_enable) {
-            Intent intent = new Intent(DevicePolicyManager.ACTION_ADD_DEVICE_ADMIN);
-            intent.putExtra(DevicePolicyManager.EXTRA_DEVICE_ADMIN, compName);
-            intent.putExtra(DevicePolicyManager.EXTRA_ADD_EXPLANATION, "CallScreenOff needs to be a Device Administrator so it can lock your phone.");
-            startActivityForResult(intent, RESULT_ENABLE);
+            if (!deviceManger.isAdminActive(compName)) {
+                Intent intent = new Intent(DevicePolicyManager.ACTION_ADD_DEVICE_ADMIN);
+                intent.putExtra(DevicePolicyManager.EXTRA_DEVICE_ADMIN, compName);
+                intent.putExtra(DevicePolicyManager.EXTRA_ADD_EXPLANATION, "CallScreenOff needs to be a Device Administrator so it can lock your phone.");
+                startActivityForResult(intent, RESULT_ENABLE);
+            } else {
+                Intent intent = new Intent();
+                intent.setComponent(new ComponentName("com.android.settings","com.android.settings.DeviceAdminAdd"));
+                intent.putExtra(DevicePolicyManager.EXTRA_DEVICE_ADMIN,compName);
+                startActivity(intent);
+            }
         }
 
         // Info

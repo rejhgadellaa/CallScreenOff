@@ -1,4 +1,7 @@
-1.03.02
+1.03.04
+  * Easily revoke Device Admin rights from within the app
+
+1.03.03
   * Bugfixes
 
 1.03.01
