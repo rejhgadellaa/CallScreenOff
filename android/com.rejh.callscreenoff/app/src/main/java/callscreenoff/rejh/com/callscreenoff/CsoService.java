@@ -70,6 +70,7 @@ public class CsoService extends Service
 
     private long hangupTimeInMillis = 0;
 
+    private boolean skipHandleProxValueOnce = false;
     private boolean justRegisteredTelephonyListener = false;
 
 
@@ -107,6 +108,17 @@ public class CsoService extends Service
             packMgr.setComponentEnabledSetting(thisComponent, PackageManager.COMPONENT_ENABLED_STATE_ENABLED, PackageManager.DONT_KILL_APP);
         }
         catch(Exception e) { Log.e(APPTAG," -> MakeSticky Exception: "+e); }
+
+        // Grrrr. android killed the service?
+        if (sett.getBoolean("onDestroyed",false)) {
+            Log.w(APPTAG," -> Grrrr.. android killed the service :(");
+        }
+        // Reset value
+        settEditor.putBoolean("onDestroyed", false);
+        settEditor.commit();
+
+        // Just Started..
+        skipHandleProxValueOnce = true;
 
         // Restore values..
         btConnected = sett.getBoolean("csoService_btConnected", false);
@@ -161,6 +173,10 @@ public class CsoService extends Service
         super.onDestroy();
 
         Log.i(APPTAG, "CsoService.onDestroy()");
+
+        // Store boolean so we know when we've been killed by Android :S
+        settEditor.putBoolean("onDestroyed",true);
+        settEditor.commit();
 
         // Unregister listeners..
         unregProxListener();
@@ -349,6 +365,12 @@ public class CsoService extends Service
     private void handleProxValue(float proxcm) {
 
         Log.d(APPTAG,"CsoService.handleProxValue(): "+ proxcm);
+
+        if (skipHandleProxValueOnce) {
+            Log.w(APPTAG," --> skipHandleProxValueOnce==true, do nothing");
+            return;
+        }
+        skipHandleProxValueOnce = false;
 
         if (!proxSensorActive) {
             Log.w(APPTAG," --> Huh? !proxSensorActive");

@@ -222,7 +222,7 @@ public class CsoActivity extends AppCompatActivity implements View.OnClickListen
 
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         Log.d(APPTAG,"CsoActivity.onActivityResult()");
-        Log.d(APPTAG," -> Resultcode: "+ resultCode);
+        Log.d(APPTAG, " -> Resultcode: " + resultCode);
         switch (requestCode) {
             case RESULT_ENABLE:
                 if (resultCode == Activity.RESULT_OK) {
@@ -241,8 +241,12 @@ public class CsoActivity extends AppCompatActivity implements View.OnClickListen
     }
 
     private void startCsoService() {
-        Intent serviceIntent = new Intent(CsoActivity.this, CsoService.class);
-        startService(serviceIntent);
+        if (!isServiceRunning(CsoService.class)) {
+            settEditor.putBoolean("onDestroyed", true);
+            settEditor.commit();
+            Intent serviceIntent = new Intent(CsoActivity.this, CsoService.class);
+            startService(serviceIntent);
+        }
     }
 
     private void sendFeedback() {
@@ -318,6 +322,17 @@ public class CsoActivity extends AppCompatActivity implements View.OnClickListen
             }
         }
         return true;
+    }
+
+    // --- Service running
+    private boolean isServiceRunning(Class<?> serviceClass) {
+        ActivityManager manager = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
+        for (ActivityManager.RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)) {
+            if (serviceClass.getName().equals(service.service.getClassName())) {
+                return true;
+            }
+        }
+        return false;
     }
 
 }
