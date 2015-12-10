@@ -42,6 +42,8 @@
 
 <p>The latest version of Android introduced two new features: Doze and Inactive Apps (<a href="http://goo.gl/cYwmhM" target="_blank">learn more</a>). The latter of these can interfere with CallScreenOff by shutting down its background service. You should be prompted to make an exception for CallScreenOff - please make sure you do.</p>
 
+<p>If you're having other problems with CallScreenOff this is probably caused by Marshmallow's new permission model; CallScreenOff uses some permission that require you, the user, to review and allow. I haven't had time to implement this so you need to do this manually for now. Go to Settings > Apps > CallScreenOff > Permissions and enable anything that is not enabled by default.</p>
+
 <h3>Uninstalling</h3>
 
 <p>When you grant an app Device Administrator permissions, you can't just uninstall it. You need to disable these permissions first: Head into Settings > Security > Device Administrators and disable CallScreenOff.</p>

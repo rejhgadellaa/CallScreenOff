@@ -70,6 +70,7 @@ public class CsoService extends Service
 
     private long hangupTimeInMillis = 0;
 
+    private boolean skipHandleProxValueOnce = false;
     private boolean justRegisteredTelephonyListener = false;
 
 
@@ -107,6 +108,17 @@ public class CsoService extends Service
             packMgr.setComponentEnabledSetting(thisComponent, PackageManager.COMPONENT_ENABLED_STATE_ENABLED, PackageManager.DONT_KILL_APP);
         }
         catch(Exception e) { Log.e(APPTAG," -> MakeSticky Exception: "+e); }
+
+        // Grrrr. android killed the service?
+        if (sett.getBoolean("onDestroyed",false)) {
+            Log.w(APPTAG," -> Grrrr.. android killed the service :(");
+        }
+        // Reset value
+        settEditor.putBoolean("onDestroyed", false);
+        settEditor.commit();
+
+        // Just Started..
+        skipHandleProxValueOnce = true;
 
         // Restore values..
         btConnected = sett.getBoolean("csoService_btConnected", false);
@@ -162,6 +174,10 @@ public class CsoService extends Service
 
         Log.i(APPTAG, "CsoService.onDestroy()");
 
+        // Store boolean so we know when we've been killed by Android :S
+        settEditor.putBoolean("onDestroyed",true);
+        settEditor.commit();
+
         // Unregister listeners..
         unregProxListener();
         telephonyMgr.listen(phoneListener, PhoneStateListener.LISTEN_NONE);
@@ -190,14 +206,22 @@ public class CsoService extends Service
 
     // --- SENSOR
 
+    private boolean proxSensorActive = false;
+
     private void regProxListener() {
-        Log.d(APPTAG,"CsoService.regProxListener()");
+        Log.d(APPTAG, "CsoService.regProxListener()");
+        if (proxSensorActive) {
+            Log.d(APPTAG," -> ProxSensor active, unreg first..");
+            unregProxListener();
+        }
+        proxSensorActive = true;
         handleProxValue(lastProxValue); // run once in case sensor listener already active
         sensorManager.registerListener(this, proxSensor, SensorManager.SENSOR_DELAY_NORMAL);
     }
 
     private void unregProxListener() {
         Log.d(APPTAG, "CsoService.unregProxListener()");
+        proxSensorActive = false;
         try {
             sensorManager.unregisterListener(this);
         } catch (Exception e) {
@@ -269,13 +293,15 @@ public class CsoService extends Service
             hangupTimeInMillis = System.currentTimeMillis();
 
             // Close activity
+            Log.d(APPTAG," -> Send cmd_finish to activity from handlePhoneCall -> idle");
             Intent activityIntent = new Intent(context, CsoActivity.class);
             activityIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK
                     | Intent.FLAG_ACTIVITY_CLEAR_TOP
                     | Intent.FLAG_ACTIVITY_SINGLE_TOP);
             activityIntent.putExtra("cmd_finish", true);
             if (lastProxValue<5) {
-                activityIntent.putExtra("cmd_lock_device",true);
+                Log.d(APPTAG," --> Also cmd_lock_device");
+                activityIntent.putExtra("cmd_lock_device", true);
             }
             context.startActivity(activityIntent);
 
@@ -338,14 +364,26 @@ public class CsoService extends Service
 
     private void handleProxValue(float proxcm) {
 
-        Log.d(APPTAG," --> Proximity: "+proxcm);
+        Log.d(APPTAG,"CsoService.handleProxValue(): "+ proxcm);
 
-        if (proxcm<0) {
+        if (skipHandleProxValueOnce) {
+            Log.w(APPTAG," --> skipHandleProxValueOnce==true, do nothing");
+            return;
+        }
+        skipHandleProxValueOnce = false;
+
+        if (!proxSensorActive) {
+            Log.w(APPTAG," --> Huh? !proxSensorActive");
+            unregProxListener();
+            return;
+        }
+
+        if (proxcm<0.0f) {
             Log.d(APPTAG," --> proxcm: "+ proxcm +", do nothing");
             return;
         }
 
-        if (proxcm<5) {
+        if (proxcm<5.0f) {
 
             // Check bt before taking action..
             AudioManager am = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
@@ -355,12 +393,14 @@ public class CsoService extends Service
 
                 // Bring other app to front because dialer app will keep unlocking screen if it's active :S
                 // -- Who built that thing?!
+                Log.d(APPTAG," -> Send cmd_lock_device to activity from handleProxValue");
                 Intent activityIntent = new Intent(context, CsoActivity.class);
                 activityIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK
                         | Intent.FLAG_ACTIVITY_CLEAR_TOP
                         | Intent.FLAG_ACTIVITY_SINGLE_TOP);
                 activityIntent.putExtra("cmd_lock_device", true);
                 if (!inCall) {
+                    Log.d(APPTAG," --> Also cmd_finish");
                     activityIntent.putExtra("cmd_finish", true);
                 }
                 context.startActivity(activityIntent);
