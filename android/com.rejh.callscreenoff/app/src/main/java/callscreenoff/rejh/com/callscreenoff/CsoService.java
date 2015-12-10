@@ -368,6 +368,7 @@ public class CsoService extends Service
 
         if (skipHandleProxValueOnce) {
             Log.w(APPTAG," --> skipHandleProxValueOnce==true, do nothing");
+            skipHandleProxValueOnce = false;
             return;
         }
         skipHandleProxValueOnce = false;

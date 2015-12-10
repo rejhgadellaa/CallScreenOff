@@ -1,3 +1,6 @@
+1.03.05
+  * Fix: screen not always locking when it should
+
 1.03.04
   * Easily revoke Device Admin rights from within the app
 

@@ -52,14 +52,11 @@
 	</script>
 
     <!-- Style / base -->
-    <link rel="stylesheet" type="text/css" href="css/common.css?c=<?=time();?>" />
-    <link rel="stylesheet/less" type="text/css" href="css/default.less?c=<?=time();?>" />
+    <link rel="stylesheet" type="text/css" href="css/common.css?c=<?=filemtime("css/common.css");?>" />
+    <link rel="stylesheet" type="text/css" href="css/default.css?c=<?=filemtime("css/default.css");?>" />
 
     <!-- Style / responsive -->
-	<link rel="stylesheet/less" type="text/css" href="css/size.phone.less?c=<?=time();?>" media="screen and (max-width: 960px)" />
-
-    <!-- Less -->
-    <script src="http://cdnjs.cloudflare.com/ajax/libs/less.js/2.5.3/less.min.js"></script>
+	<link rel="stylesheet" type="text/css" href="css/size.phone.css?c=<?=filemtime("css/size.phone.css");?>" media="screen and (max-width: 960px)" />
 
     <!-- Webfonts -->
     <link href='http://fonts.googleapis.com/css?family=Roboto:100,200,300,400' rel='stylesheet' type='text/css'>
@@ -77,41 +74,17 @@
             console.log("onload()");
 
             // Scroll listener -> Hide fab :D
-            $(".main").off( 'scroll');
-            $(".main").on( 'scroll', function(e) {
+            $(window).off( 'scroll');
+            $(window).on( 'scroll', function(e) {
 
-                delta = vars.scrolltop - $(".main").scrollTop();
-                if (!vars.lastDelata) { vars.lastDelata = -(delta); }
-
-                if (delta<0 && vars.lastDelata>0) {
-                    // scroll up
-                    // ..
-                    $(".main").css("top","56px");
-                    $(".header").css("height","56px");
-                    $(".header .logo").css("top","-192px");
-                    if (vars.scrolltimeout) { clearTimeout(vars.scrolltimeout); }
-                    vars.scrolltimeout = setTimeout(function(){
-                        console.log("scroll");
-                        $(".header .logo_sml").css("top","0");
-                    },250);
-
+                if ($(window).scrollTop()<136) {
+                    $(".header_sml .logo_sml").css("opacity",0);
+                    $(".header").css("opacity",1);
                 }
-                if(delta >= 0 && vars.lastDelata<0) {
-                    // scroll down
-                    // ..
-                    $(".main").css("top","192px");
-                    $(".header").css("height","192px");
-                    $(".header .logo_sml").css("top","-56px");
-                    $(".header .logo").css("top","0");
-                    if (vars.scrolltimeout) { clearTimeout(vars.scrolltimeout); }
-                    vars.scrolltimeout = setTimeout(function(){
-                        console.log("scroll");
-                        $(".header .logo").css("top","0");
-                    },250);
+                if ($(window).scrollTop()>136) {
+                    $(".header_sml .logo_sml").css("opacity",1);
+                    $(".header").css("opacity",0);
                 }
-
-                vars.scrolltop = $("main").scrollTop();
-                vars.lastDelata = delta;
 
             });
 
@@ -132,7 +105,30 @@
 <section id="home">
 
     <!-- Header -->
-	<div class="header shadow_z2">
+	<div class="header">
+
+        <div class="logo">
+            <img src="img/ic_white_512_spaced.png" />
+            <div class="title">CallScreenOff</div>
+            <div class="subtitle"><span class="theapp">The app that keeps your screen turned off -</span> <span class="forandroid">for Android</span></div>
+        </div>
+
+    </div>
+
+    <!-- Header_sml -->
+    <div class="header_sml shadow_z2">
+
+        <div class="logo_sml">
+            <img src="img/ic_launcher_w_48.png?c=<?=time();?>" />
+            <div class="title">CallScreenOff</div>
+            <div class="subtitle">The (clock radio) icecast streaming app</div>
+        </div>
+
+    </div>
+
+    <!--
+
+    <div class="header shadow_z2">
 
         <div class="logo">
             <img src="img/ic_white_512_spaced.png" />
@@ -147,6 +143,8 @@
         </div>
 
     </div>
+
+    -->
 
     <!-- Main -->
     <div class="main">
