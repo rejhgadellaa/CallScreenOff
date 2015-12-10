@@ -12,7 +12,7 @@ if exist C:\android\sdk\tools\android.bat set androidsdk=C:\android\sdk\
 cd %path_prj%
 
 echo Copy apk to dropbox...
-copy %cd%\app\app-release.apk D:\Desktop\Dropbox\__Static\various\apks\%name_prj%.apk
+copy %cd%\app\app-release.apk D:\Desktop\Drive\Box\__Static\various\apks\%name_prj%.apk
 
 echo.
 echo Install and run on device...
