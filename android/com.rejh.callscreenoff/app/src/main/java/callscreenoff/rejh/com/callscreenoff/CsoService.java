@@ -277,11 +277,14 @@ public class CsoService extends Service
             unregProxListener();
 
             // This event just fired because the service registered the listener...
+            /*
+            // TODO: Not needed anymore (?)
             if (lastPhoneState<0) {
                 Log.d(APPTAG," --> lastPhoneState: "+ lastPhoneState +", do nothing");
                 lastPhoneState = state;
                 return;
             }
+            /**/
             // Same here..
             if (justRegisteredTelephonyListener) {
                 Log.d(APPTAG," --> lastPhoneState: "+ lastPhoneState +", justRegisteredTelephonyListener, do nothing");
