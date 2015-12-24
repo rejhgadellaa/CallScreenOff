@@ -112,6 +112,7 @@ public class CsoService extends Service
         // Grrrr. android killed the service?
         if (sett.getBoolean("onDestroyed",false)) {
             Log.w(APPTAG," -> Grrrr.. android killed the service :(");
+            // TODO: do we need to act on this?
         }
         // Reset value
         settEditor.putBoolean("onDestroyed", false);
@@ -466,7 +467,7 @@ public class CsoService extends Service
 
 
     // ===================================================================
-    // Notifications
+    // Notifications / foreground service
 
     private void goForeground() {
 

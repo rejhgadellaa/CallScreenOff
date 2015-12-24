@@ -104,10 +104,9 @@ public class CsoActivity extends AppCompatActivity implements View.OnClickListen
 
         Log.i(APPTAG, "CsoActivity.onResume()");
 
-        // Service?
+        // Is app whitelisted from Android M Inactive Apps and has Device Admin rights?
         if (handleMarshMallowInactiveApp() && deviceManger.isAdminActive(compName)) {
-            // Hide button_enable
-            // button_enable.setVisibility(View.GONE);
+            // Change button text
             button_enable.setText("Disable");
             // Show nothingtosee
             textview_nothingtosee.setText("( Nothing to see here )");
@@ -120,7 +119,10 @@ public class CsoActivity extends AppCompatActivity implements View.OnClickListen
             // Start service
             Log.d(APPTAG," -> Start service");
             startCsoService();
-        } else {
+        }
+
+        // No we don't
+        else {
             Log.d(APPTAG, " -> Can't start service without admin permission");
             button_enable.setText("Enable");
             // Show nothingtosee -> info
@@ -128,31 +130,30 @@ public class CsoActivity extends AppCompatActivity implements View.OnClickListen
             textview_nothingtosee.setText("CSO is currently disabled");
         }
 
-        // CMD?
+        // CMD from service via intent
         Intent intent = getIntent();
         long newIntentTimeDiff = System.currentTimeMillis() - newIntentTime;
         if (newIntentTimeDiff<1000) {
 
             // CMD_LOCK_DEVICE
-            if (intent != null && intent.hasExtra("cmd_lock_device") && intent.getBooleanExtra("cmd_lock_device", false)) {
+            if (intent != null
+                    && intent.hasExtra("cmd_lock_device")
+                    && intent.getBooleanExtra("cmd_lock_device", false)
+                    ) {
+                // Lock device
                 if (deviceManger.isAdminActive(compName)) {
                     Log.d(APPTAG, " -> Lock device NOW");
                     deviceManger.lockNow();
-                    /*
-                    if (powerMgr.isScreenOn()) {
-                        WindowManager.LayoutParams params = getWindow().getAttributes();
-                        params.flags |= WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON;
-                        params.screenBrightness = 0;
-                        getWindow().setAttributes(params);
-                    }
-                    /**/
                 } else {
                     Log.w(APPTAG, " -> Cannot lock device without device admin permission");
                 }
             }
 
-            // CMD_MOVE_TO_BACK
-            if (intent != null && intent.hasExtra("cmd_finish") && intent.getBooleanExtra("cmd_finish", false)) {
+            // CMD_FINISH
+            if (intent != null
+                    && intent.hasExtra("cmd_finish")
+                    && intent.getBooleanExtra("cmd_finish", false)
+                    ) {
                 Log.d(APPTAG, " -> Finish activity");
                 finish();
             }
@@ -168,6 +169,7 @@ public class CsoActivity extends AppCompatActivity implements View.OnClickListen
 
         Log.d(APPTAG, "CsoActivity.onNewIntent()");
 
+        // Store intent timestamp and set intent so onResume can use getIntent
         newIntentTime = System.currentTimeMillis();
         setIntent(_intent);
 
