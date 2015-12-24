@@ -253,7 +253,7 @@ public class CsoService extends Service
 
         if (btConnected && state==TelephonyManager.CALL_STATE_OFFHOOK) {
 
-            Log.d(APPTAG, " -> BT && ofhook, reg listener");
+            Log.d(APPTAG, " -> BT && offhook, reg listener");
 
             goForeground();
 

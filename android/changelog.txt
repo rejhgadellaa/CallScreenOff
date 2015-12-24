@@ -1,3 +1,6 @@
+1.03.06
+  * Code cleanup, minor fixes, improvements
+
 1.03.05
   * Fix: screen not always locking when it should
 
