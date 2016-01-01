@@ -110,7 +110,7 @@ public class CsoService extends Service
         catch(Exception e) { Log.e(APPTAG," -> MakeSticky Exception: "+e); }
 
         // Grrrr. android killed the service?
-        if (sett.getBoolean("onDestroyed",false)) {
+        if (!sett.getBoolean("onDestroyed",false)) {
             Log.w(APPTAG," -> Grrrr.. android killed the service :(");
             // TODO: do we need to act on this?
         }

@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="callscreenoff.rejh.com.callscreenoff"
-    >
+    package="callscreenoff.rejh.com.callscreenoff">
 
     <uses-permission android:name="android.permission.BROADCAST_STICKY" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+    <uses-permission android:name="android.permission.BLUETOOTH" />
     <uses-permission android:name="android.permission.READ_PHONE_STATE" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
@@ -19,8 +19,8 @@
 
         <activity
             android:name=".CsoActivity"
-            android:theme="@style/AppTheme.NoActionBar"
-            android:launchMode="singleTask" >
+            android:launchMode="singleTask"
+            android:theme="@style/AppTheme.NoActionBar">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -30,27 +30,24 @@
 
         <activity
             android:name=".CsoActivityIntro"
-            android:theme="@style/AppTheme.NoActionBar"
-            >
-        </activity>
+            android:theme="@style/AppTheme.NoActionBar"></activity>
 
         <service
             android:name=".CsoService"
             android:enabled="true"
             android:exported="true"
-            android:launchMode="singleTask" >
-        </service>
+            android:launchMode="singleTask"></service>
 
         <receiver
             android:name=".CsoService$CsoUnlockRecv"
             android:enabled="true"
-            android:exported="true" >
-        </receiver>
+            android:exported="true"></receiver>
+
         <receiver
             android:name=".CsoAdminRecv"
             android:description="@string/device_admin_description"
             android:label="CallScreenOff"
-            android:permission="android.permission.BIND_DEVICE_ADMIN" >
+            android:permission="android.permission.BIND_DEVICE_ADMIN">
             <meta-data
                 android:name="android.app.device_admin"
                 android:resource="@xml/policies" />
@@ -59,21 +56,33 @@
                 <action android:name="android.app.action.DEVICE_ADMIN_ENABLED" />
             </intent-filter>
         </receiver>
+
         <receiver
             android:name=".CsoOnBootRecv"
             android:enabled="true"
-            android:exported="true" >
+            android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
             </intent-filter>
             <intent-filter>
                 <action android:name="android.intent.action.PACKAGE_REPLACED" />
-
                 <data
                     android:scheme="package"
                     android:sspPrefix="callscreenoff.rejh.com.callscreenoff" />
             </intent-filter>
         </receiver>
+
+        <receiver
+            android:name=".CsoBtConnChanged"
+            android:enabled="false"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="android.bluetooth.adapter.action.STATE_CHANGED" />
+                <action android:name="android.bluetooth.a2dp.profile.action.CONNECTION_STATE_CHANGED" />
+                <action android:name="android.bluetooth.adapter.action.CONNECTION_STATE_CHANGED" />
+            </intent-filter>
+        </receiver>
+
     </application>
 
 </manifest>

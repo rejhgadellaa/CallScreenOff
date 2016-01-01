@@ -4,11 +4,14 @@ import android.app.Activity;
 import android.app.ActivityManager;
 import android.app.admin.DeviceAdminReceiver;
 import android.app.admin.DevicePolicyManager;
+import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.Build;
@@ -118,7 +121,8 @@ public class CsoActivity extends AppCompatActivity implements View.OnClickListen
             textview_nothingtosee.startAnimation(anim);
             // Start service
             Log.d(APPTAG," -> Start service");
-            startCsoService();
+            //startCsoService();
+            registerBtReceiver(true);
         }
 
         // No we don't
@@ -128,6 +132,7 @@ public class CsoActivity extends AppCompatActivity implements View.OnClickListen
             // Show nothingtosee -> info
             textview_nothingtosee.setVisibility(View.VISIBLE);
             textview_nothingtosee.setText("CSO is currently disabled");
+            registerBtReceiver(false);
         }
 
         // CMD from service via intent
@@ -239,11 +244,13 @@ public class CsoActivity extends AppCompatActivity implements View.OnClickListen
                     Log.i(APPTAG, " -> Admin enabled!");
                     settEditor.putBoolean("deviceAdminEnabled",true);
                     settEditor.commit();
-                    startCsoService();
+                    // startCsoService();
+                    registerBtReceiver(true);
                 } else {
                     Log.i(APPTAG, " -> Admin enable FAILED!");
-                    settEditor.putBoolean("deviceAdminEnabled",false);
+                    settEditor.putBoolean("deviceAdminEnabled", false);
                     settEditor.commit();
+                    registerBtReceiver(false);
                 }
                 return;
         }
@@ -251,12 +258,27 @@ public class CsoActivity extends AppCompatActivity implements View.OnClickListen
     }
 
     private void startCsoService() {
+        /**/
+        // TODO: DEPRECATED
         if (!isServiceRunning(CsoService.class)) {
             settEditor.putBoolean("onDestroyed", true);
             settEditor.commit();
             Intent serviceIntent = new Intent(CsoActivity.this, CsoService.class);
             startService(serviceIntent);
         }
+        /**/
+    }
+
+    private void registerBtReceiver(boolean turnOn) {
+        Log.d(APPTAG, "CsoActivity.registerBtReceiver(): " + turnOn);
+        Log.d(APPTAG, " -> OIOIOI");
+        int flag=(turnOn ?
+                PackageManager.COMPONENT_ENABLED_STATE_ENABLED :
+                PackageManager.COMPONENT_ENABLED_STATE_DISABLED);
+        ComponentName component=new ComponentName(this, CsoBtConnChanged.class);
+        getPackageManager().setComponentEnabledSetting(component, flag, PackageManager.DONT_KILL_APP);
+        int compEnabledState = getPackageManager().getComponentEnabledSetting(component);
+        Log.d(APPTAG," -> Comp_enabled_state: "+compEnabledState);
     }
 
     private void sendFeedback() {

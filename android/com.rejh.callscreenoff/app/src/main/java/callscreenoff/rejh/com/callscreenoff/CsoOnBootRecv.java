@@ -5,6 +5,7 @@ import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.util.Log;
 
 public class CsoOnBootRecv extends BroadcastReceiver {
@@ -59,10 +60,12 @@ public class CsoOnBootRecv extends BroadcastReceiver {
         ComponentName compName = new ComponentName(context, CsoAdminRecv.class);
 
         if (deviceManger.isAdminActive(compName)) {
-            Log.d(APPTAG," -> Start service");
-            startCsoService();
+            Log.d(APPTAG, " -> Start service");
+            //startCsoService();
+            registerBtReceiver(true);
         } else {
             Log.d(APPTAG," -> Can't start service without admin permission");
+            registerBtReceiver(false);
         }
 
     }
@@ -70,6 +73,17 @@ public class CsoOnBootRecv extends BroadcastReceiver {
     private void startCsoService() {
         Intent serviceIntent = new Intent(context, CsoService.class);
         context.startService(serviceIntent);
+    }
+
+    private void registerBtReceiver(boolean turnOn) {
+        Log.d(APPTAG,"CsoOnBootRecv.registerBtReceiver(): "+ turnOn);
+        int flag=(turnOn ?
+                PackageManager.COMPONENT_ENABLED_STATE_ENABLED :
+                PackageManager.COMPONENT_ENABLED_STATE_DISABLED);
+        ComponentName component=new ComponentName(context, CsoBtConnChanged.class);
+        context.getPackageManager().setComponentEnabledSetting(component, flag, PackageManager.DONT_KILL_APP);
+        int compEnabledState = context.getPackageManager().getComponentEnabledSetting(component);
+        Log.d(APPTAG, " -> Comp_enabled_state: " + compEnabledState);
     }
 
 }
