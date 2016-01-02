@@ -36,7 +36,13 @@
     </li>
 </ul>
 
-<h2 id="permissions">Support &amp; troubleshooting</h2>
+<h2 id="support">Support &amp; troubleshooting</h2>
+
+<h3>Persistent notification</h3>
+
+<p>As you may or may not know, the Android system will sometimes kill one or more background services when the device is low on available memory. The only way to prevent this is running the service "in the foreground". To do this, the service needs to show a notification so the user is aware that the service is doing something that prevents the system from killing it. So this is why CallScreenOff shows a persistent notification whenever the service is active.</p>
+
+<p>However, there is a "trick" of sorts the user still can perform: block notifications from the app. To do this you need to longpress the Notification (Android 5.0 Lollipop and higher) and press the small information icon that appears. In the screen that pops up you have the option to block notifications. Since CallScreenOff does not show any other notifications that are important for you to see, you can safely block it and still have the service run in the foreground.</p>
 
 <h3>Android 6.0 Marshmallow</h3>
 
