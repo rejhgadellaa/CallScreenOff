@@ -1,3 +1,7 @@
+1.03.08
+  * Only run service when BT A2DP is connected
+  * Ongoing notification to keep service alive
+
 1.03.06
   * Code cleanup, minor fixes, improvements
 

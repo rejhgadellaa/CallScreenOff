@@ -6,6 +6,7 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.media.AudioManager;
 import android.util.Log;
 
 public class CsoOnBootRecv extends BroadcastReceiver {
@@ -52,7 +53,7 @@ public class CsoOnBootRecv extends BroadcastReceiver {
         }
 
         if (isUpdate && !isUpdateAndRun){
-            Log.d(APPTAG," -> Update but not callscreenoff, do nothing?");
+            Log.d(APPTAG, " -> Update but not callscreenoff, do nothing?");
             return;
         }
 
@@ -60,13 +61,20 @@ public class CsoOnBootRecv extends BroadcastReceiver {
         ComponentName compName = new ComponentName(context, CsoAdminRecv.class);
 
         if (deviceManger.isAdminActive(compName)) {
-            Log.d(APPTAG, " -> Start service");
-            //startCsoService();
+            Log.d(APPTAG, " -> Enable BT state receiver");
             registerBtReceiver(true);
+            AudioManager am = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
+            boolean btConnected = am.isBluetoothA2dpOn();
+            if (btConnected) {
+                startCsoService();
+            }
         } else {
-            Log.d(APPTAG," -> Can't start service without admin permission");
+            Log.d(APPTAG," -> No admin permission");
             registerBtReceiver(false);
         }
+
+
+
 
     }
 
@@ -80,7 +88,7 @@ public class CsoOnBootRecv extends BroadcastReceiver {
         int flag=(turnOn ?
                 PackageManager.COMPONENT_ENABLED_STATE_ENABLED :
                 PackageManager.COMPONENT_ENABLED_STATE_DISABLED);
-        ComponentName component=new ComponentName(context, CsoBtConnChanged.class);
+        ComponentName component=new ComponentName(context, CsoBtStateRecv.class);
         context.getPackageManager().setComponentEnabledSetting(component, flag, PackageManager.DONT_KILL_APP);
         int compEnabledState = context.getPackageManager().getComponentEnabledSetting(component);
         Log.d(APPTAG, " -> Comp_enabled_state: " + compEnabledState);

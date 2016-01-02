@@ -165,6 +165,9 @@ public class CsoService extends Service
         // Listen for values once to get things started..
         regProxListener();
 
+        // Go foreground
+        goForeground();
+
     }
 
     // Destroy
@@ -182,6 +185,8 @@ public class CsoService extends Service
         // Unregister listeners..
         unregProxListener();
         telephonyMgr.listen(phoneListener, PhoneStateListener.LISTEN_NONE);
+
+        leaveForeground();
 
     }
 
@@ -267,7 +272,8 @@ public class CsoService extends Service
 
             Log.d(APPTAG, " -> BT && idle, unreg listener");
 
-            leaveForeground();
+            // TODO: deprecated
+            //leaveForeground();
 
             // Reset some values, stop prox sensor
             if (inCall) { // if we were in a call than we hung up, right?
@@ -325,7 +331,8 @@ public class CsoService extends Service
             inCall = false;
             hasHungUp = false;
             unregProxListener();
-            leaveForeground();
+            // TODO: deprecated
+            //leaveForeground();
 
         }
 
@@ -480,7 +487,7 @@ public class CsoService extends Service
 
             JSONObject opts = new JSONObject();
             opts.put("title","CallScreenOff");
-            opts.put("message","Ongoing call");
+            opts.put("message","The service is active");
             opts.put("smallicon","ic_stat_notification_phone_locked");
             opts.put("color","#009688");
             opts.put("priority","MIN");

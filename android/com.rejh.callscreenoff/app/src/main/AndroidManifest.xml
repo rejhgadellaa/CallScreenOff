@@ -16,7 +16,6 @@
         android:label="@string/app_name"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-
         <activity
             android:name=".CsoActivity"
             android:launchMode="singleTask"
@@ -27,22 +26,20 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-
         <activity
             android:name=".CsoActivityIntro"
-            android:theme="@style/AppTheme.NoActionBar"></activity>
+            android:theme="@style/AppTheme.NoActionBar" />
 
         <service
             android:name=".CsoService"
             android:enabled="true"
             android:exported="true"
-            android:launchMode="singleTask"></service>
+            android:launchMode="singleTask" />
 
         <receiver
             android:name=".CsoService$CsoUnlockRecv"
             android:enabled="true"
-            android:exported="true"></receiver>
-
+            android:exported="true" />
         <receiver
             android:name=".CsoAdminRecv"
             android:description="@string/device_admin_description"
@@ -56,7 +53,6 @@
                 <action android:name="android.app.action.DEVICE_ADMIN_ENABLED" />
             </intent-filter>
         </receiver>
-
         <receiver
             android:name=".CsoOnBootRecv"
             android:enabled="true"
@@ -66,6 +62,7 @@
             </intent-filter>
             <intent-filter>
                 <action android:name="android.intent.action.PACKAGE_REPLACED" />
+
                 <data
                     android:scheme="package"
                     android:sspPrefix="callscreenoff.rejh.com.callscreenoff" />
@@ -73,16 +70,13 @@
         </receiver>
 
         <receiver
-            android:name=".CsoBtConnChanged"
-            android:enabled="false"
-            android:exported="false">
+            android:name=".CsoBtStateRecv"
+            android:enabled="true"
+            android:exported="true">
             <intent-filter>
-                <action android:name="android.bluetooth.adapter.action.STATE_CHANGED" />
                 <action android:name="android.bluetooth.a2dp.profile.action.CONNECTION_STATE_CHANGED" />
-                <action android:name="android.bluetooth.adapter.action.CONNECTION_STATE_CHANGED" />
             </intent-filter>
         </receiver>
-
     </application>
 
 </manifest>

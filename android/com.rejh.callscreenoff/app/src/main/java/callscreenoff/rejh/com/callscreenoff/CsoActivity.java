@@ -120,14 +120,14 @@ public class CsoActivity extends AppCompatActivity implements View.OnClickListen
             textview_nothingtosee.setVisibility(View.VISIBLE);
             textview_nothingtosee.startAnimation(anim);
             // Start service
-            Log.d(APPTAG," -> Start service");
+            Log.d(APPTAG, " -> Enable BT state receiver");
             //startCsoService();
             registerBtReceiver(true);
         }
 
         // No we don't
         else {
-            Log.d(APPTAG, " -> Can't start service without admin permission");
+            Log.d(APPTAG, " -> No admin permission");
             button_enable.setText("Enable");
             // Show nothingtosee -> info
             textview_nothingtosee.setVisibility(View.VISIBLE);
@@ -271,11 +271,10 @@ public class CsoActivity extends AppCompatActivity implements View.OnClickListen
 
     private void registerBtReceiver(boolean turnOn) {
         Log.d(APPTAG, "CsoActivity.registerBtReceiver(): " + turnOn);
-        Log.d(APPTAG, " -> OIOIOI");
         int flag=(turnOn ?
                 PackageManager.COMPONENT_ENABLED_STATE_ENABLED :
                 PackageManager.COMPONENT_ENABLED_STATE_DISABLED);
-        ComponentName component=new ComponentName(this, CsoBtConnChanged.class);
+        ComponentName component=new ComponentName(this, CsoBtStateRecv.class);
         getPackageManager().setComponentEnabledSetting(component, flag, PackageManager.DONT_KILL_APP);
         int compEnabledState = getPackageManager().getComponentEnabledSetting(component);
         Log.d(APPTAG," -> Comp_enabled_state: "+compEnabledState);

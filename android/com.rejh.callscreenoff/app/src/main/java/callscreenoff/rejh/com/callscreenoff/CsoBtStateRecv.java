@@ -8,7 +8,7 @@ import android.content.SharedPreferences;
 import android.media.AudioManager;
 import android.util.Log;
 
-public class CsoBtConnChanged extends BroadcastReceiver {
+public class CsoBtStateRecv extends BroadcastReceiver {
 
     // ===================================================================
     // Objects and variables..
@@ -24,13 +24,13 @@ public class CsoBtConnChanged extends BroadcastReceiver {
     // ===================================================================
     // Lifecycle
 
-    public CsoBtConnChanged() {
+    public CsoBtStateRecv() {
     }
 
     @Override
     public void onReceive(Context _context, Intent _intent) {
 
-        Log.i(APPTAG, "CsoBtConnChanged.onReceive()");
+        Log.i(APPTAG, "CsoBtStateRecv.onReceive()");
         Log.d(APPTAG, " -> Action: " + _intent.getAction());
 
         context = _context;
@@ -42,10 +42,6 @@ public class CsoBtConnChanged extends BroadcastReceiver {
         AudioManager am = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
         boolean btConnected = am.isBluetoothA2dpOn();
 
-        // HACK because a2dp connection changed event not firing.. :(((
-        BluetoothAdapter bluetooth = BluetoothAdapter.getDefaultAdapter();
-        btConnected = bluetooth.isEnabled();
-
         Log.d(APPTAG, " -> BluetoothA2dpOn: " + btConnected);
 
         settEditor.putBoolean("onDestroyed", true);
@@ -56,6 +52,5 @@ public class CsoBtConnChanged extends BroadcastReceiver {
         } else {
             context.stopService(serviceIntent);
         }
-
     }
 }
