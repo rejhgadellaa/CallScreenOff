@@ -272,9 +272,6 @@ public class CsoService extends Service
 
             Log.d(APPTAG, " -> BT && idle, unreg listener");
 
-            // TODO: deprecated
-            //leaveForeground();
-
             // Reset some values, stop prox sensor
             if (inCall) { // if we were in a call than we hung up, right?
                 hasHungUp = true;
@@ -283,15 +280,6 @@ public class CsoService extends Service
             unregProxListener();
 
             // This event just fired because the service registered the listener...
-            /*
-            // TODO: Not needed anymore (?)
-            if (lastPhoneState<0) {
-                Log.d(APPTAG," --> lastPhoneState: "+ lastPhoneState +", do nothing");
-                lastPhoneState = state;
-                return;
-            }
-            /**/
-            // Same here..
             if (justRegisteredTelephonyListener) {
                 Log.d(APPTAG," --> lastPhoneState: "+ lastPhoneState +", justRegisteredTelephonyListener, do nothing");
                 justRegisteredTelephonyListener = false;
@@ -331,8 +319,6 @@ public class CsoService extends Service
             inCall = false;
             hasHungUp = false;
             unregProxListener();
-            // TODO: deprecated
-            //leaveForeground();
 
         }
 

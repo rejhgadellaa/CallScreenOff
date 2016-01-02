@@ -73,9 +73,6 @@ public class CsoOnBootRecv extends BroadcastReceiver {
             registerBtReceiver(false);
         }
 
-
-
-
     }
 
     private void startCsoService() {

@@ -121,7 +121,6 @@ public class CsoActivity extends AppCompatActivity implements View.OnClickListen
             textview_nothingtosee.startAnimation(anim);
             // Start service
             Log.d(APPTAG, " -> Enable BT state receiver");
-            //startCsoService();
             registerBtReceiver(true);
         }
 
@@ -244,7 +243,6 @@ public class CsoActivity extends AppCompatActivity implements View.OnClickListen
                     Log.i(APPTAG, " -> Admin enabled!");
                     settEditor.putBoolean("deviceAdminEnabled",true);
                     settEditor.commit();
-                    // startCsoService();
                     registerBtReceiver(true);
                 } else {
                     Log.i(APPTAG, " -> Admin enable FAILED!");
@@ -255,18 +253,6 @@ public class CsoActivity extends AppCompatActivity implements View.OnClickListen
                 return;
         }
         super.onActivityResult(requestCode, resultCode, data);
-    }
-
-    private void startCsoService() {
-        /**/
-        // TODO: DEPRECATED
-        if (!isServiceRunning(CsoService.class)) {
-            settEditor.putBoolean("onDestroyed", true);
-            settEditor.commit();
-            Intent serviceIntent = new Intent(CsoActivity.this, CsoService.class);
-            startService(serviceIntent);
-        }
-        /**/
     }
 
     private void registerBtReceiver(boolean turnOn) {
@@ -353,17 +339,6 @@ public class CsoActivity extends AppCompatActivity implements View.OnClickListen
             }
         }
         return true;
-    }
-
-    // --- Service running
-    private boolean isServiceRunning(Class<?> serviceClass) {
-        ActivityManager manager = (ActivityManager) getSystemService(Context.ACTIVITY_SERVICE);
-        for (ActivityManager.RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)) {
-            if (serviceClass.getName().equals(service.service.getClassName())) {
-                return true;
-            }
-        }
-        return false;
     }
 
 }
