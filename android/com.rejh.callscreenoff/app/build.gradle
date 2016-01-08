@@ -8,8 +8,8 @@ android {
         applicationId "callscreenoff.rejh.com.callscreenoff"
         minSdkVersion 16
         targetSdkVersion 23
-        versionCode 10308
-        versionName "1.03.08"
+        versionCode 10309
+        versionName "1.03.09"
     }
     buildTypes {
         release {

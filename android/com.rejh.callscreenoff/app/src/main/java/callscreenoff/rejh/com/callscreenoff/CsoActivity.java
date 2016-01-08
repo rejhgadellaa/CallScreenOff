@@ -1,5 +1,6 @@
 package callscreenoff.rejh.com.callscreenoff;
 
+import android.Manifest;
 import android.app.Activity;
 import android.app.ActivityManager;
 import android.app.admin.DeviceAdminReceiver;
@@ -19,6 +20,8 @@ import android.os.Environment;
 import android.os.PowerManager;
 import android.os.SystemClock;
 import android.provider.Settings;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -51,7 +54,13 @@ public class CsoActivity extends AppCompatActivity implements View.OnClickListen
     private ActivityManager activityManager;
     private ComponentName compName;
 
-    static final int RESULT_ENABLE = 1;
+    private final static int RESULT_ENABLE = 1;
+
+    private final static int PERMISSION_REQ_READ_STORAGE = 1;
+    private final static int PERMISSION_REQ_WRITE_STORAGE = 2;
+    private final static int PERMISSION_REQ_PHONE_STATE = 3;
+
+    private boolean isRequestingPermissions = false;
 
     private Button button_enable;
     private ImageView button_info;
@@ -107,32 +116,10 @@ public class CsoActivity extends AppCompatActivity implements View.OnClickListen
 
         Log.i(APPTAG, "CsoActivity.onResume()");
 
-        // Is app whitelisted from Android M Inactive Apps and has Device Admin rights?
-        if (handleMarshMallowInactiveApp() && deviceManger.isAdminActive(compName)) {
-            // Change button text
-            button_enable.setText("Disable");
-            // Show nothingtosee
-            textview_nothingtosee.setText("( Nothing to see here )");
-            AlphaAnimation anim = new AlphaAnimation(0.0f, 1.0f);
-            anim.setDuration(1000);
-            anim.setStartOffset(5000);
-            anim.setRepeatCount(0);
-            textview_nothingtosee.setVisibility(View.VISIBLE);
-            textview_nothingtosee.startAnimation(anim);
-            // Start service
-            Log.d(APPTAG, " -> Enable BT state receiver");
-            registerBtReceiver(true);
-        }
-
-        // No we don't
-        else {
-            Log.d(APPTAG, " -> No admin permission");
-            button_enable.setText("Enable");
-            // Show nothingtosee -> info
-            textview_nothingtosee.setVisibility(View.VISIBLE);
-            textview_nothingtosee.setText("CSO is currently disabled");
-            registerBtReceiver(false);
-        }
+        // Do The Thing
+        // Checks Device Admin (+ Android M: inactive apps and permissions)
+        // And then runs the shabang
+        doTheThing();
 
         // CMD from service via intent
         Intent intent = getIntent();
@@ -234,8 +221,49 @@ public class CsoActivity extends AppCompatActivity implements View.OnClickListen
 
     }
 
+    private void doTheThing() {
+
+        // Handle inactive apps..
+        if (!handleMarshMallowInactiveApp()) {
+            return;
+        }
+
+        // Android M permissions..
+        if (!hasCsoPermissions()) {
+            initRequestCsoPermissions();
+            return;
+        }
+
+        // Is app whitelisted from Android M Inactive Apps and has Device Admin rights?
+        if (deviceManger.isAdminActive(compName)) {
+            // Change button text
+            button_enable.setText("Disable");
+            // Show nothingtosee
+            textview_nothingtosee.setText("( Nothing to see here )");
+            AlphaAnimation anim = new AlphaAnimation(0.0f, 1.0f);
+            anim.setDuration(1000);
+            anim.setStartOffset(5000);
+            anim.setRepeatCount(0);
+            textview_nothingtosee.setVisibility(View.VISIBLE);
+            textview_nothingtosee.startAnimation(anim);
+            // Start service
+            Log.d(APPTAG, " -> Enable BT state receiver");
+            registerBtReceiver(true);
+        }
+
+        // No we don't
+        else {
+            Log.d(APPTAG, " -> No admin permission");
+            button_enable.setText("Enable");
+            // Show nothingtosee -> info
+            textview_nothingtosee.setVisibility(View.VISIBLE);
+            textview_nothingtosee.setText("CSO is currently disabled");
+            registerBtReceiver(false);
+        }
+    }
+
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        Log.d(APPTAG,"CsoActivity.onActivityResult()");
+        Log.d(APPTAG, "CsoActivity.onActivityResult()");
         Log.d(APPTAG, " -> Resultcode: " + resultCode);
         switch (requestCode) {
             case RESULT_ENABLE:
@@ -263,7 +291,7 @@ public class CsoActivity extends AppCompatActivity implements View.OnClickListen
         ComponentName component=new ComponentName(this, CsoBtStateRecv.class);
         getPackageManager().setComponentEnabledSetting(component, flag, PackageManager.DONT_KILL_APP);
         int compEnabledState = getPackageManager().getComponentEnabledSetting(component);
-        Log.d(APPTAG," -> Comp_enabled_state: "+compEnabledState);
+        Log.d(APPTAG, " -> Comp_enabled_state: " + compEnabledState);
     }
 
     private void sendFeedback() {
@@ -282,7 +310,7 @@ public class CsoActivity extends AppCompatActivity implements View.OnClickListen
         Intent emailIntent = new Intent(android.content.Intent.ACTION_SEND);
         emailIntent.setType("text/plain");
         emailIntent.putExtra(android.content.Intent.EXTRA_EMAIL, new String[]{"droidapps@rejh.nl"});
-        emailIntent.putExtra(android.content.Intent.EXTRA_SUBJECT,"CallScreenOff Feedback");
+        emailIntent.putExtra(android.content.Intent.EXTRA_SUBJECT, "CallScreenOff Feedback");
         emailIntent.putExtra(android.content.Intent.EXTRA_TEXT, "");
         emailIntent.putExtra(Intent.EXTRA_STREAM, Uri.parse("file://" + file.getAbsolutePath()));
         startActivity(Intent.createChooser(emailIntent, "Send feedback..."));
@@ -312,8 +340,9 @@ public class CsoActivity extends AppCompatActivity implements View.OnClickListen
         if(Build.VERSION.SDK_INT >= 23) {
             // Marshmallow detected
             PowerManager pm = (PowerManager) context.getSystemService(Context.POWER_SERVICE);
-            Log.d(APPTAG," --> Ignore batt optimizations: "+ pm.isIgnoringBatteryOptimizations(context.getPackageName()));
+            Log.d(APPTAG, " --> Ignore batt optimizations: " + pm.isIgnoringBatteryOptimizations(context.getPackageName()));
             if (!pm.isIgnoringBatteryOptimizations(context.getPackageName()) && !dialogActive) {
+                dialogActive = true;
                 AlertDialog.Builder builder = new AlertDialog.Builder(context);
                 builder.setMessage("We've detected you're running Android 6.0 Marshmallow (or higher). Congrats! "
                         + "However, this means a new feature called Inactive Apps may get in the way of CallScreenOff's ability to operate properly. "
@@ -329,7 +358,7 @@ public class CsoActivity extends AppCompatActivity implements View.OnClickListen
                 builder.setNegativeButton("Nope", new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int id) {
                         // User cancelled the dialog
-                        Toast.makeText(context, "", Toast.LENGTH_SHORT).show();
+                        youidiot();
                         dialogActive = false;
                     }
                 });
@@ -339,6 +368,125 @@ public class CsoActivity extends AppCompatActivity implements View.OnClickListen
             }
         }
         return true;
+    }
+
+    // ---------------- PERMISSIONS
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String permissions[], int[] grantResults) {
+        if (grantResults.length > 0
+                && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+            // permission was granted, yay!
+            // check if we need any other permissions
+            isRequestingPermissions = requestCsoPermissions();
+        } else {
+            youidiot();
+        }
+        return;
+    }
+
+    private boolean hasCsoPermissions() {
+        if (!hasPermissionStorageWrite() || !hasPermissionStorageRead() || !hasPermissionPhoneState()) {
+            return false;
+        }
+        return true;
+    }
+
+    private void initRequestCsoPermissions() {
+        if (dialogActive) { return; }
+        if (isRequestingPermissions) { return; }
+        AlertDialog.Builder builder = new AlertDialog.Builder(context);
+        builder.setMessage("CallScreenOff needs the following permissions so it can do its work:\n\n" +
+                "* READ_PHONE_STATE:\nSo it can respond to calls\n\n" +
+                "* READ/WRITE_STORAGE:\nRequired to attach a log when sending feedback")
+                .setTitle("Permissions");
+        builder.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int id) {
+                isRequestingPermissions = requestCsoPermissions();
+                dialogActive = false;
+            }
+        });
+        builder.setNegativeButton("Nope", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int id) {
+                youidiot();
+                dialogActive = false;
+            }
+        });
+        AlertDialog dialog = builder.create();
+        dialog.show();
+        dialogActive = true;
+    }
+
+    private boolean requestCsoPermissions() {
+        if (!hasPermissionPhoneState()) { reqPermissionPhoneState(); return true; }
+        else if (!hasPermissionStorageWrite()) { reqPermissionStorageWrite(); return true; }
+        else if (!hasPermissionStorageRead()) { reqPermissionStorageRead(); return true; }
+        else {
+            doTheThing();
+            return false;
+        }
+    }
+
+    private boolean hasPermissionStorageRead() {
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
+            return true;
+        }
+        return false;
+    }
+
+    private void reqPermissionStorageRead() {
+        ActivityCompat.requestPermissions(this,
+                new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},
+                PERMISSION_REQ_READ_STORAGE);
+    }
+
+    private boolean hasPermissionStorageWrite() {
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
+            return true;
+        }
+        return false;
+    }
+
+    private void reqPermissionStorageWrite() {
+        ActivityCompat.requestPermissions(this,
+                new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},
+                PERMISSION_REQ_WRITE_STORAGE);
+    }
+
+    private boolean hasPermissionPhoneState() {
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_PHONE_STATE) == PackageManager.PERMISSION_GRANTED) {
+            return true;
+        }
+        return false;
+    }
+
+    private void reqPermissionPhoneState() {
+        ActivityCompat.requestPermissions(this,
+                new String[]{Manifest.permission.READ_PHONE_STATE},
+                PERMISSION_REQ_PHONE_STATE);
+    }
+
+    private void youidiot() {
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setMessage("Sorry, CallScreenOff can not function properly like this.");
+        builder.setPositiveButton("Exit", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int id) {
+                finish();
+            }
+        });
+        builder.setNegativeButton("Retry", new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int id) {
+                // User cancelled the dialog
+                isRequestingPermissions = false;
+                dialogActive = false;
+                doTheThing();
+            }
+        });
+        builder.setTitle("Exit CallScreenOff?");
+        AlertDialog dialog = builder.create();
+        dialog.show();
+
     }
 
 }
