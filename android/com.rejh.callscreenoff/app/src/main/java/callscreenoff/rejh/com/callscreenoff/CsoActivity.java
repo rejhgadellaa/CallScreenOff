@@ -3,22 +3,17 @@ package callscreenoff.rejh.com.callscreenoff;
 import android.Manifest;
 import android.app.Activity;
 import android.app.ActivityManager;
-import android.app.admin.DeviceAdminReceiver;
 import android.app.admin.DevicePolicyManager;
-import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
-import android.graphics.Color;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Environment;
 import android.os.PowerManager;
-import android.os.SystemClock;
 import android.provider.Settings;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
@@ -27,7 +22,6 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
-import android.view.WindowManager;
 import android.view.animation.AlphaAnimation;
 import android.widget.Button;
 import android.widget.ImageView;
@@ -41,6 +35,9 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 
 public class CsoActivity extends AppCompatActivity implements View.OnClickListener, View.OnLongClickListener {
+
+    // ===================================================================
+    // Objects and variables..
 
     private String APPTAG = "CallScreenOff";
 
@@ -70,6 +67,9 @@ public class CsoActivity extends AppCompatActivity implements View.OnClickListen
     private long newIntentTime = 0;
 
     private boolean dialogActive = false;
+
+    // ===================================================================
+    // Lifecycle
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -166,6 +166,9 @@ public class CsoActivity extends AppCompatActivity implements View.OnClickListen
 
     }
 
+    // ===================================================================
+    // Events (clicks, etc)
+
     @Override
     public void onClick(View v) {
 
@@ -220,6 +223,51 @@ public class CsoActivity extends AppCompatActivity implements View.OnClickListen
         return false;
 
     }
+
+    // ---------------- ACTION: SEND FEEDBACK
+
+    private void sendFeedback() {
+
+        String logstr = getlog();
+        File file = new File(Environment.getExternalStorageDirectory().toString(), "callscreenoff-logcat.txt");
+        FileOutputStream outputStream;
+        try {
+            outputStream = new FileOutputStream(file);
+            outputStream.write(logstr.getBytes());
+            outputStream.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        Intent emailIntent = new Intent(android.content.Intent.ACTION_SEND);
+        emailIntent.setType("text/plain");
+        emailIntent.putExtra(android.content.Intent.EXTRA_EMAIL, new String[]{"droidapps@rejh.nl"});
+        emailIntent.putExtra(android.content.Intent.EXTRA_SUBJECT, "CallScreenOff Feedback");
+        emailIntent.putExtra(android.content.Intent.EXTRA_TEXT, "");
+        emailIntent.putExtra(Intent.EXTRA_STREAM, Uri.parse("file://" + file.getAbsolutePath()));
+        startActivity(Intent.createChooser(emailIntent, "Send feedback..."));
+
+    }
+
+    private String getlog() {
+        StringBuilder log=new StringBuilder();
+        try {
+            Process process = Runtime.getRuntime().exec("logcat -v time -d ^(?!chromium)");
+            BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+
+            String line;
+            while ((line = bufferedReader.readLine()) != null) {
+                log.append(line+"\n");
+            }
+        } catch (IOException e) {
+            Log.e(APPTAG,"CsoActivity: getlog.IOException: "+e.toString());
+            e.printStackTrace();
+        }
+        return log.toString();
+    }
+
+    // ===================================================================
+    // DO THE THING
 
     private void doTheThing() {
 
@@ -294,45 +342,10 @@ public class CsoActivity extends AppCompatActivity implements View.OnClickListen
         Log.d(APPTAG, " -> Comp_enabled_state: " + compEnabledState);
     }
 
-    private void sendFeedback() {
+    // ===================================================================
+    // Marshmallow...
 
-        String logstr = getlog();
-        File file = new File(Environment.getExternalStorageDirectory().toString(), "callscreenoff-logcat.txt");
-        FileOutputStream outputStream;
-        try {
-            outputStream = new FileOutputStream(file);
-            outputStream.write(logstr.getBytes());
-            outputStream.close();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        Intent emailIntent = new Intent(android.content.Intent.ACTION_SEND);
-        emailIntent.setType("text/plain");
-        emailIntent.putExtra(android.content.Intent.EXTRA_EMAIL, new String[]{"droidapps@rejh.nl"});
-        emailIntent.putExtra(android.content.Intent.EXTRA_SUBJECT, "CallScreenOff Feedback");
-        emailIntent.putExtra(android.content.Intent.EXTRA_TEXT, "");
-        emailIntent.putExtra(Intent.EXTRA_STREAM, Uri.parse("file://" + file.getAbsolutePath()));
-        startActivity(Intent.createChooser(emailIntent, "Send feedback..."));
-
-    }
-
-    private String getlog() {
-        StringBuilder log=new StringBuilder();
-        try {
-            Process process = Runtime.getRuntime().exec("logcat -v time -d ^(?!chromium)");
-            BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(process.getInputStream()));
-
-            String line;
-            while ((line = bufferedReader.readLine()) != null) {
-                log.append(line+"\n");
-            }
-        } catch (IOException e) {
-            Log.e(APPTAG,"CsoActivity: getlog.IOException: "+e.toString());
-            e.printStackTrace();
-        }
-        return log.toString();
-    }
+    // ---------------- INACTIVE APPS
 
     private boolean handleMarshMallowInactiveApp() {
         Log.d(APPTAG," -> handleMarshMallowInactiveApp()");
@@ -358,7 +371,7 @@ public class CsoActivity extends AppCompatActivity implements View.OnClickListen
                 builder.setNegativeButton("Nope", new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int id) {
                         // User cancelled the dialog
-                        youidiot();
+                        cantWorkLikeThat();
                         dialogActive = false;
                     }
                 });
@@ -380,7 +393,7 @@ public class CsoActivity extends AppCompatActivity implements View.OnClickListen
             // check if we need any other permissions
             isRequestingPermissions = requestCsoPermissions();
         } else {
-            youidiot();
+            cantWorkLikeThat();
         }
         return;
     }
@@ -408,7 +421,7 @@ public class CsoActivity extends AppCompatActivity implements View.OnClickListen
         });
         builder.setNegativeButton("Nope", new DialogInterface.OnClickListener() {
             public void onClick(DialogInterface dialog, int id) {
-                youidiot();
+                cantWorkLikeThat();
                 dialogActive = false;
             }
         });
@@ -466,7 +479,9 @@ public class CsoActivity extends AppCompatActivity implements View.OnClickListen
                 PERMISSION_REQ_PHONE_STATE);
     }
 
-    private void youidiot() {
+    // ---------------- CANT WORK LIKE THAT
+
+    private void cantWorkLikeThat() {
 
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setMessage("Sorry, CallScreenOff can not function properly like this.");
