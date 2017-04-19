@@ -73,7 +73,6 @@ public class CsoService extends Service
     private boolean skipHandleProxValueOnce = false;
     private boolean justRegisteredTelephonyListener = false;
 
-
     // ===================================================================
     // Lifecycle
 
@@ -251,7 +250,7 @@ public class CsoService extends Service
         // Headset connected?
         btConnected = false;
         AudioManager am = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
-        if(am.isBluetoothA2dpOn()) {
+        if(am.isWiredHeadsetOn()) {
             btConnected = true;
         }
         //btConnected = true; // TODO: FOR TESTING
@@ -385,7 +384,7 @@ public class CsoService extends Service
 
             // Check bt before taking action..
             AudioManager am = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
-            btConnected = am.isBluetoothA2dpOn();
+            btConnected = am.isWiredHeadsetOn();
             //btConnected = true;  // TODO: FOR TESTING
             if (btConnected) {
 

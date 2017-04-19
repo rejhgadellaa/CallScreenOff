@@ -5,6 +5,7 @@ import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.media.AudioManager;
 import android.util.Log;
@@ -61,18 +62,34 @@ public class CsoOnBootRecv extends BroadcastReceiver {
         ComponentName compName = new ComponentName(context, CsoAdminRecv.class);
 
         if (deviceManger.isAdminActive(compName)) {
-            Log.d(APPTAG, " -> Enable BT state receiver");
+
+            Log.d(APPTAG, " -> Enable BT/HS state receiver");
+
             registerBtReceiver(true);
+            registerHsReceiver(true);
+
+            startCsoHsObserver();
+
             AudioManager am = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
             boolean btConnected = am.isBluetoothA2dpOn();
             if (btConnected) {
                 startCsoService();
             }
+
         } else {
+
             Log.d(APPTAG," -> No admin permission");
+
             registerBtReceiver(false);
+            registerHsReceiver(false);
+
         }
 
+    }
+
+    private void startCsoHsObserver() {
+        Intent serviceIntent = new Intent(context, CsoHsObserver.class);
+        context.startService(serviceIntent);
     }
 
     private void startCsoService() {
@@ -82,6 +99,7 @@ public class CsoOnBootRecv extends BroadcastReceiver {
 
     private void registerBtReceiver(boolean turnOn) {
         Log.d(APPTAG,"CsoOnBootRecv.registerBtReceiver(): "+ turnOn);
+        /*
         int flag=(turnOn ?
                 PackageManager.COMPONENT_ENABLED_STATE_ENABLED :
                 PackageManager.COMPONENT_ENABLED_STATE_DISABLED);
@@ -89,6 +107,30 @@ public class CsoOnBootRecv extends BroadcastReceiver {
         context.getPackageManager().setComponentEnabledSetting(component, flag, PackageManager.DONT_KILL_APP);
         int compEnabledState = context.getPackageManager().getComponentEnabledSetting(component);
         Log.d(APPTAG, " -> Comp_enabled_state: " + compEnabledState);
+        /**/
+    }
+
+    private void registerHsReceiver(boolean turnOn) {
+        Log.d(APPTAG,"CsoOnBootRecv.registerHsReceiver(): "+ turnOn);
+        /*
+        int flag=(turnOn ?
+                PackageManager.COMPONENT_ENABLED_STATE_ENABLED :
+                PackageManager.COMPONENT_ENABLED_STATE_DISABLED);
+        ComponentName component=new ComponentName(context, CsoHsStateRecv.class);
+        context.getPackageManager().setComponentEnabledSetting(component, flag, PackageManager.DONT_KILL_APP);
+        int compEnabledState = context.getPackageManager().getComponentEnabledSetting(component);
+
+        // Prep receiver..
+        CsoHsStateRecv csoHsStateRecv = new CsoHsStateRecv();
+        IntentFilter csoHsStateIntentFilter = new IntentFilter(Intent.ACTION_HEADSET_PLUG);
+
+        if (turnOn) {
+            context.registerReceiver(csoHsStateRecv, csoHsStateIntentFilter);
+        } else {
+            context.unregisterReceiver(csoHsStateRecv);
+        }
+        Log.d(APPTAG, " -> Comp_enabled_state: " + turnOn);
+                /**/
     }
 
 }
