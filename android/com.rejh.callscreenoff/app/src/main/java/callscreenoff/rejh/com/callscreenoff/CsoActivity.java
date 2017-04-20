@@ -295,8 +295,8 @@ public class CsoActivity extends AppCompatActivity implements View.OnClickListen
             textview_nothingtosee.setVisibility(View.VISIBLE);
             textview_nothingtosee.startAnimation(anim);
             // Start service
-            Log.d(APPTAG, " -> Enable BT state receiver");
-            registerBtReceiver(true);
+            Log.d(APPTAG, " -> Enable HS state receiver");
+            startCsoHsObserver();
         }
 
         // No we don't
@@ -306,7 +306,7 @@ public class CsoActivity extends AppCompatActivity implements View.OnClickListen
             // Show nothingtosee -> info
             textview_nothingtosee.setVisibility(View.VISIBLE);
             textview_nothingtosee.setText("CSO is currently disabled");
-            registerBtReceiver(false);
+            stopCsoHsObserver();
         }
     }
 
@@ -319,27 +319,26 @@ public class CsoActivity extends AppCompatActivity implements View.OnClickListen
                     Log.i(APPTAG, " -> Admin enabled!");
                     settEditor.putBoolean("deviceAdminEnabled",true);
                     settEditor.commit();
-                    registerBtReceiver(true);
+                    startCsoHsObserver();
                 } else {
                     Log.i(APPTAG, " -> Admin enable FAILED!");
                     settEditor.putBoolean("deviceAdminEnabled", false);
                     settEditor.commit();
-                    registerBtReceiver(false);
+                    stopCsoHsObserver();
                 }
                 return;
         }
         super.onActivityResult(requestCode, resultCode, data);
     }
 
-    private void registerBtReceiver(boolean turnOn) {
-        Log.d(APPTAG, "CsoActivity.registerBtReceiver(): " + turnOn);
-        int flag=(turnOn ?
-                PackageManager.COMPONENT_ENABLED_STATE_ENABLED :
-                PackageManager.COMPONENT_ENABLED_STATE_DISABLED);
-        ComponentName component=new ComponentName(this, CsoBtStateRecv.class);
-        getPackageManager().setComponentEnabledSetting(component, flag, PackageManager.DONT_KILL_APP);
-        int compEnabledState = getPackageManager().getComponentEnabledSetting(component);
-        Log.d(APPTAG, " -> Comp_enabled_state: " + compEnabledState);
+    private void startCsoHsObserver() {
+        Intent serviceIntent = new Intent(context, CsoHsObserver.class);
+        context.startService(serviceIntent);
+    }
+
+    private void stopCsoHsObserver() {
+        Intent serviceIntent = new Intent(context, CsoHsObserver.class);
+        context.stopService(serviceIntent);
     }
 
     // ===================================================================

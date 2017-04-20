@@ -61,7 +61,7 @@ public class CsoService extends Service
     private CsoUnlockRecv csoUnlockRecv;
     private IntentFilter csoUnlockRecvIntentFilter;
 
-    private boolean btConnected;
+    private boolean hsConnected;
     private boolean inCall = false;
     private boolean hasHungUp = false;
 
@@ -121,7 +121,7 @@ public class CsoService extends Service
         skipHandleProxValueOnce = true;
 
         // Restore values..
-        btConnected = sett.getBoolean("csoService_btConnected", false);
+        hsConnected = sett.getBoolean("csoService_hsConnected", false);
         lastPhoneState = sett.getInt("csoService_lastPhoneState", -1);
         lastProxValue = sett.getFloat("csoService_lastProxValue", -1.0f);
         hangupTimeInMillis = sett.getLong("csoService_hangupTimeInMillis",0);
@@ -248,16 +248,16 @@ public class CsoService extends Service
         wakeLock.acquire(10*1000);
 
         // Headset connected?
-        btConnected = false;
+        hsConnected = false;
         AudioManager am = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
         if(am.isWiredHeadsetOn()) {
-            btConnected = true;
+            hsConnected = true;
         }
-        //btConnected = true; // TODO: FOR TESTING
+        //hsConnected = true; // TODO: FOR TESTING
 
-        if (btConnected && state==TelephonyManager.CALL_STATE_OFFHOOK) {
+        if (hsConnected && state==TelephonyManager.CALL_STATE_OFFHOOK) {
 
-            Log.d(APPTAG, " -> BT && offhook, reg listener");
+            Log.d(APPTAG, " -> HS && offhook, reg listener");
 
             goForeground();
 
@@ -267,9 +267,9 @@ public class CsoService extends Service
             regProxListener();
 
 
-        } else if (btConnected && state==TelephonyManager.CALL_STATE_IDLE) {
+        } else if (hsConnected && state==TelephonyManager.CALL_STATE_IDLE) {
 
-            Log.d(APPTAG, " -> BT && idle, unreg listener");
+            Log.d(APPTAG, " -> HS && idle, unreg listener");
 
             // Reset some values, stop prox sensor
             if (inCall) { // if we were in a call than we hung up, right?
@@ -302,9 +302,9 @@ public class CsoService extends Service
             }
             context.startActivity(activityIntent);
 
-        } else if (btConnected && state==TelephonyManager.CALL_STATE_RINGING) {
+        } else if (hsConnected && state==TelephonyManager.CALL_STATE_RINGING) {
 
-            Log.d(APPTAG, " -> BT && ringing, go foreground..");
+            Log.d(APPTAG, " -> HS && ringing, go foreground..");
 
             goForeground();
             inCall = false;
@@ -312,7 +312,7 @@ public class CsoService extends Service
 
         } else {
 
-            Log.d(APPTAG," -> No BT, unreg listener");
+            Log.d(APPTAG," -> No HS, unreg listener");
 
             // Stop prox sensor
             inCall = false;
@@ -382,11 +382,11 @@ public class CsoService extends Service
 
         if (proxcm<5.0f) {
 
-            // Check bt before taking action..
+            // Check hs before taking action..
             AudioManager am = (AudioManager) getSystemService(Context.AUDIO_SERVICE);
-            btConnected = am.isWiredHeadsetOn();
-            //btConnected = true;  // TODO: FOR TESTING
-            if (btConnected) {
+            hsConnected = am.isWiredHeadsetOn();
+            //hsConnected = true;  // TODO: FOR TESTING
+            if (hsConnected) {
 
                 // Bring other app to front because dialer app will keep unlocking screen if it's active :S
                 // -- Who built that thing?!
@@ -404,8 +404,8 @@ public class CsoService extends Service
 
             } else {
 
-                // BT disconnected but keep proxListener on..
-                Log.d(APPTAG, " --> btConnected == false?");
+                // HS disconnected but keep proxListener on..
+                Log.d(APPTAG, " --> hsConnected == false?");
 
             }
 
@@ -414,7 +414,7 @@ public class CsoService extends Service
         // Prox listener..
         long hangupTimeMillisAgo = System.currentTimeMillis() - hangupTimeInMillis;
         Log.d(APPTAG, " -> HangupTimeMillisAgo: " + hangupTimeMillisAgo);
-        if (!inCall && hangupTimeMillisAgo > 2500 || !btConnected) {
+        if (!inCall && hangupTimeMillisAgo > 2500 || !hsConnected) {
             Log.d(APPTAG, " --> && unregProxListener");
             unregProxListener();
         }
@@ -439,9 +439,9 @@ public class CsoService extends Service
             Log.d(APPTAG," -> Action: "+ action);
 
             long hangupTimeMillisAgo = System.currentTimeMillis() - hangupTimeInMillis;
-            Log.d(APPTAG," -> inCall: "+ inCall +", hasHungUp: "+ hasHungUp +", btConnected: "+ btConnected);
+            Log.d(APPTAG," -> inCall: "+ inCall +", hasHungUp: "+ hasHungUp +", hsConnected: "+ hsConnected);
             Log.d(APPTAG," -> HangupTimeMillisAgo: " + hangupTimeMillisAgo);
-            if (!inCall && !hasHungUp && hangupTimeMillisAgo > 5000 || !btConnected) {
+            if (!inCall && !hasHungUp && hangupTimeMillisAgo > 5000 || !hsConnected) {
                 Log.d(APPTAG," -> Not in call, do nothing..");
                 unregProxListener();
                 return;
@@ -515,7 +515,7 @@ public class CsoService extends Service
 
     public void storeValues() {
         Log.d(APPTAG,"CsoService.storeValues()");
-        settEditor.putBoolean("csoService_btConnected",btConnected);
+        settEditor.putBoolean("csoService_hsConnected",hsConnected);
         settEditor.putInt("csoService_lastPhoneState", lastPhoneState);
         settEditor.putFloat("csoService_lastProxValue", lastProxValue);
         settEditor.putLong("csoService_hangupTimeInMillis",hangupTimeInMillis);

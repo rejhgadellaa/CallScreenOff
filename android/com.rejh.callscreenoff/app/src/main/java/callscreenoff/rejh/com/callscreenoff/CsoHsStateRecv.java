@@ -39,9 +39,9 @@ public class CsoHsStateRecv extends BroadcastReceiver {
 
         AudioManager am = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
         //boolean hsConnected = am.isWiredHeadsetOn();
-        String hsName = _intent.getStringExtra("name");
         int hsState = _intent.getIntExtra("state", 0);
         int hsMicrophone = _intent.getIntExtra("microphone ", 0);
+        String hsName = _intent.getStringExtra("name");
         boolean hsConnected = hsState==1; //&& hsMicrophone==1;
 
         Log.d(APPTAG, " -> Headset name: "+ hsName);
