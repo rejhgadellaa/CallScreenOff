@@ -7,17 +7,11 @@
 <ol>
   <li>You accept/make a call or hang up: goto 3</li>
   <li>The screen unlocks and you are in a call: goto 3</li>
-  <li>CallScreenOff checks if you have a BT headset connected: if yes goto 4, else do nothing</li>
+  <li>CallScreenOff checks if you have a headset connected: if yes goto 4, else do nothing</li>
   <li>CallScreenOff uses the proximity sensor to determine if your device is in your pocket: if yes goto 5, else do nothing</li>
   <li>Use Device Manager to lock your screen</li>
   <li>Done!</li>
 </ol>
-
-<h2 id="screenshots">Screenshots</h2>
-
-<p>
-<div class="screenshots"><img src="http://static.rejh.nl/rgt/rgt.php?w=128&h=320&src=http://storage.rejh.nl/_stored/res/callscreenoff/48f6b0cb-4afe-4f7a-a415-d8e508c31e93.png"><div class="space"></div><img src="http://static.rejh.nl/rgt/rgt.php?w=128&h=320&src=http://storage.rejh.nl/_stored/res/callscreenoff/70d3e439-1bc5-44d3-9483-8e09310cb518.png"></div>
-</p>
 
 <h2 id="permissions">Permissions</h2>
 
@@ -64,11 +58,11 @@
 
 <h2 id="get-the-app">Get the app!</h2>
 
-<p>CallScreenOff is available on Google Play:</p>
+<p>CallScreenOff is no longer available on Google Play.</p>
 
 <p><center>
-<a href="https://goo.gl/vnfh9j" target="_blank">
-  <img alt="Get it on Google Play" src="img/googleplay60.png" />
+<a href="https://stor4ge.rejh.nl/_stored/dev/android/callscreenoff/callscreenoff-latest.apk" target="_blank">
+  Get the apk
 </a>
 </center></p>
 

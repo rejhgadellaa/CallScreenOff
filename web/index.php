@@ -46,7 +46,7 @@
     <!-- Javascript: Things :D -->
     <script>
 	if (window.location.hostname.indexOf("www.rejh.nl")<0 && window.location.hostname.indexOf("localhost")<0 && window.location.hostname.indexOf("192.168.")<0) {
-		window.location.href = "http://www.rejh.nl/callscreenoff/"; // for prod
+		window.location.href = "https://www.rejh.nl/callscreenoff/"; // for prod
 	}
 	</script>
 	</script>
@@ -126,35 +126,9 @@
 
     </div>
 
-    <!--
-
-    <div class="header shadow_z2">
-
-        <div class="logo">
-            <img src="img/ic_white_512_spaced.png" />
-            <div class="title">CallScreenOff</div>
-            <div class="subtitle"><span class="theapp">The app that keeps your screen turned off -</span> <span class="forandroid">for Android</span></div>
-        </div>
-
-        <div class="logo_sml">
-            <img src="img/ic_launcher_w_48.png?c=<?=time();?>" />
-            <div class="title">CallScreenOff</div>
-            <div class="subtitle">The (clock radio) icecast streaming app</div>
-        </div>
-
-    </div>
-
-    -->
-
     <!-- Main -->
     <div class="main">
         <div class="main_inner">
-
-            <!--
-            <div class="tabs">
-                <div class="tab shadow_z2 round4 active">Home</div><div class="tabspace"></div><div class="tab shadow_z2 round4">Acknoledgements</div>
-            </div>
-            -->
 
             <!-- readme -->
             <div id="readme" class="readme"><p>Loading...</p></div>
@@ -168,7 +142,7 @@
                 <!-- Legal -->
                 <div class="legal">
                     <div class="item_wrap">CallScreenOff is open source and distributed under the MIT license</div>
-                    <div class="item_wrap">Copyright &copy; 2015 <a href="http://www.rejh.nl/" target="_blank">REJH Gadellaa</a></div>
+                    <div class="item_wrap">Copyright &copy; <?=date("Y");?> <a href="http://www.rejh.nl/" target="_blank">REJH Gadellaa</a></div>
 
                 </div>
 

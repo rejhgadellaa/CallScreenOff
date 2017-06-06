@@ -43,11 +43,6 @@
             android:launchMode="singleTask" />
 
         <receiver
-            android:name=".CsoService$CsoUnlockRecv"
-            android:enabled="true"
-            android:exported="true" />
-
-        <receiver
             android:name=".CsoAdminRecv"
             android:description="@string/device_admin_description"
             android:label="CallScreenOff"
