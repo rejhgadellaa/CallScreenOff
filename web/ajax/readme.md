@@ -25,9 +25,6 @@
     <li><strong>Run at startup</strong><br>
         CSO runs a background service that registers a bunch of event listeners (like phone state events, screen unlocks, etc). This permission allows the service to automatically start when you (re)boot your device.<br>&nbsp;
     </li>
-    <li><strong>Modify or delete the contents of your USB storage</strong><br>
-        Not really required but Android Studio keeps adding this permission..?
-    </li>
 </ul>
 
 <h2 id="support">Support &amp; troubleshooting</h2>
@@ -42,7 +39,7 @@
 
 <p>The latest version of Android introduced two new features: Doze and Inactive Apps (<a href="http://goo.gl/cYwmhM" target="_blank">learn more</a>). The latter of these can interfere with CallScreenOff by shutting down its background service. You should be prompted to make an exception for CallScreenOff - please make sure you do.</p>
 
-<p>If you're having other problems with CallScreenOff this is probably caused by Marshmallow's new permission model; CallScreenOff uses some permission that require you, the user, to review and allow. I haven't had time to implement this so you need to do this manually for now. Go to Settings > Apps > CallScreenOff > Permissions and enable anything that is not enabled by default.</p>
+<p>In case you are worried that this service may impact your battery life: it shouldn't. The service registers a passive listener for when a headset is (dis)connected. If one is connected, it also registers a listener for phone call events. Only if both conditions are true it may become more active.</p>
 
 <h3>Uninstalling</h3>
 
