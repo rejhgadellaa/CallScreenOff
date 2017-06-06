@@ -25,6 +25,9 @@
     <li><strong>Run at startup</strong><br>
         CSO runs a background service that registers a bunch of event listeners (like phone state events, screen unlocks, etc). This permission allows the service to automatically start when you (re)boot your device.<br>&nbsp;
     </li>
+    <li><strong>Read/write storage</strong><br>
+        Required to write a log and attach it when sending feedback.
+    </li>
 </ul>
 
 <h2 id="support">Support &amp; troubleshooting</h2>
