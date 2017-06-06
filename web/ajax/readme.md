@@ -58,14 +58,12 @@
 
 <h2 id="get-the-app">Get the app!</h2>
 
-<p>CallScreenOff is no longer available on Google Play.</p>
+<p>CallScreenOff is unfortunately no longer available on Google Play. You can, however, download the APK below:</p>
 
 <div class="download round4" onClick="window.open('https://stor4ge.rejh.nl/_stored/dev/android/callscreenoff/callscreenoff-latest.apk');">
     <img class="icon" src="img/ic_download_w_48.png" />
     <div class="text">DOWNLOAD</div>
 </div>
-
-
 
 <p>&nbsp;</p>
 
